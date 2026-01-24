@@ -3,58 +3,6 @@
 This document outlines the database schema for the Glasses Shop application, automatically generated from the JPA Entities.
 
 ## Entity Relationship Diagram
-
-```mermaid
-erDiagram
-    USER_ACCOUNT ||--o{ ADDRESS : has
-    USER_ACCOUNT ||--o{ ORDER : places
-    USER_ACCOUNT ||--|| CART : has
-    USER_ACCOUNT ||--o{ REVIEW : writes
-    USER_ACCOUNT ||--o{ NOTIFICATION : receives
-    PRODUCT ||--o{ PRODUCT_VARIANT : has
-    PRODUCT ||--o{ REVIEW : has
-    PRODUCT_VARIANT ||--o{ PRODUCT_IMAGE : has
-    CART ||--o{ CART_ITEM : contains
-    CART_ITEM }|--|| PRODUCT_VARIANT : references
-    CART_ITEM }|--o| LENS_OPTION : includes
-    ORDER ||--|{ ORDER_ITEM : contains
-    ORDER }|--|| ADDRESS : "ships to"
-    ORDER }|--|| ADDRESS : "billed to"
-    ORDER ||--o{ RETURN_REQUEST : has
-    ORDER_ITEM }|--|| PRODUCT_VARIANT : references
-    ORDER_ITEM }|--o| LENS_OPTION : includes
-    ORDER_ITEM ||--o| PRE_ORDER : triggers
-    ORDER_ITEM ||--o| PRESCRIPTION : requires
-    ORDER ||--o{ PAYMENT : has
-    ORDER ||--o{ SHIPMENT : has
-
-    USER_ACCOUNT {
-        long user_id PK
-        string email
-        string role
-    }
-    PRODUCT {
-        long product_id PK
-        string type
-        boolean prescription_supported
-    }
-    PRODUCT_VARIANT {
-        long variant_id PK
-        decimal price
-        int stock
-    }
-    ORDER {
-        long order_id PK
-        decimal total
-        string status
-    }
-    PROMOTION {
-        long promotion_id PK
-        string code
-        decimal value
-    }
-```
-
 ## 1. User Management
 
 ### `user_account`
