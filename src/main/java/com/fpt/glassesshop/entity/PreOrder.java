@@ -22,7 +22,7 @@ public class PreOrder {
     @OneToOne
     @JoinColumn(name = "order_item_id", unique = true)
     private OrderItem orderItem;
-
+    
     private LocalDate expectedArrival;
     private String supplierName;
     private String status;
