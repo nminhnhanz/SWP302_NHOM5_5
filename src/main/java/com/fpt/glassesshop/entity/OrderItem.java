@@ -34,4 +34,18 @@ public class OrderItem {
     private Integer quantity;
     private BigDecimal unitPrice;
     private String fulfillmentType;
+
+    @OneToOne(mappedBy = "orderItem", cascade = CascadeType.ALL)
+    private Prescription prescription;
+
+    @OneToOne(mappedBy = "orderItem", cascade = CascadeType.ALL)
+    private PreOrder preOrder;
+
+    public String getItemType() {
+        if (prescription != null)
+            return "PRESCRIPTION";
+        if (preOrder != null)
+            return "PRE_ORDER";
+        return "IN_STOCK";
+    }
 }
