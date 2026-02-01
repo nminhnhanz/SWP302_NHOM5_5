@@ -241,7 +241,8 @@
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h6 class="text-muted text-uppercase fw-bold mb-2">Pending Prescriptions</h6>
-                                    <h3 class="fw-bold mb-0">12</h3>
+                                    <h3 class="fw-bold mb-0"
+                                        th:text="${stats['PRESCRIPTION'] != null ? stats['PRESCRIPTION'] : 0}">12</h3>
                                 </div>
                                 <div class="stat-icon bg-opacity-10 bg-primary text-primary">
                                     <i class="fas fa-file-medical"></i>
@@ -254,7 +255,8 @@
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h6 class="text-muted text-uppercase fw-bold mb-2">Ready to Ship</h6>
-                                    <h3 class="fw-bold mb-0">45</h3>
+                                    <h3 class="fw-bold mb-0"
+                                        th:text="${stats['IN_STOCK'] != null ? stats['IN_STOCK'] : 0}">45</h3>
                                 </div>
                                 <div class="stat-icon bg-opacity-10 bg-success text-success">
                                     <i class="fas fa-truck-loading"></i>
@@ -267,7 +269,8 @@
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h6 class="text-muted text-uppercase fw-bold mb-2">Pre-order Waitlist</h6>
-                                    <h3 class="fw-bold mb-0">8</h3>
+                                    <h3 class="fw-bold mb-0"
+                                        th:text="${stats['PRE_ORDER'] != null ? stats['PRE_ORDER'] : 0}">8</h3>
                                 </div>
                                 <div class="stat-icon bg-opacity-10 bg-warning text-warning">
                                     <i class="fas fa-hourglass-half"></i>
@@ -313,30 +316,28 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <!-- Mock Data -->
-                                        <tr>
-                                            <td class="fw-medium">#ORD-7829</td>
-                                            <td>Alex Johnson</td>
-                                            <td>Oct 24, 2023</td>
-                                            <td>Single Vision</td>
-                                            <td><span class="badge status-pending">Pending Review</span></td>
+                                        <tr th:each="item : ${prescriptionItems}">
+                                            <td class="fw-medium" th:text="'#ORD-' + ${item.order.orderId}">#ORD-7829
+                                            </td>
+                                            <td th:text="${item.order.user != null ? item.order.user.name : 'Guest'}">
+                                                Alex Johnson</td>
+                                            <td
+                                                th:text="${item.order.orderDate != null ? #temporals.format(item.order.orderDate, 'MMM dd, yyyy') : 'N/A'}">
+                                                Oct 24, 2023</td>
+                                            <td th:text="${item.lensOption != null ? item.lensOption.type : 'N/A'}">
+                                                Single Vision</td>
+                                            <td><span class="badge status-pending"
+                                                    th:text="${item.fulfillmentType}">Pending Review</span></td>
                                             <td class="text-end">
-                                                <button class="btn btn-action btn-light text-primary" title="View"><i
-                                                        class="fas fa-eye"></i></button>
+                                                <a th:href="@{/operational-staff/order/{id}(id=${item.order.orderId})}"
+                                                    class="btn btn-action btn-light text-primary" title="View"><i
+                                                        class="fas fa-eye"></i></a>
                                                 <button class="btn btn-action btn-light text-success" title="Approve"><i
                                                         class="fas fa-check"></i></button>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td class="fw-medium">#ORD-7830</td>
-                                            <td>Sarah Smith</td>
-                                            <td>Oct 23, 2023</td>
-                                            <td>Progressive</td>
-                                            <td><span class="badge status-processing">In Lab</span></td>
-                                            <td class="text-end">
-                                                <button class="btn btn-action btn-light text-primary" title="View"><i
-                                                        class="fas fa-eye"></i></button>
-                                            </td>
+                                        <tr th:if="${#lists.isEmpty(prescriptionItems)}">
+                                            <td colspan="6" class="text-center">No prescription orders found.</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -361,31 +362,28 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td class="fw-medium">#STK-9001</td>
-                                            <td>Mike Ross</td>
-                                            <td>Oct 24, 2023</td>
-                                            <td>Ray-Ban Aviator</td>
-                                            <td>$150.00</td>
-                                            <td><span class="badge status-shipped">Shipped</span></td>
-                                            <td class="text-end">
-                                                <button class="btn btn-action btn-light text-primary"
-                                                    title="View Details"><i class="fas fa-eye"></i></button>
+                                        <tr th:each="item : ${stockItems}">
+                                            <td class="fw-medium" th:text="'#STK-' + ${item.order.orderId}">#STK-9001
                                             </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-medium">#STK-9002</td>
-                                            <td>Rachel Zane</td>
-                                            <td>Oct 24, 2023</td>
-                                            <td>Gucci Oval</td>
-                                            <td>$280.00</td>
-                                            <td><span class="badge status-processing">Processing</span></td>
+                                            <td th:text="${item.order.user != null ? item.order.user.name : 'Guest'}">
+                                                Mike Ross</td>
+                                            <td
+                                                th:text="${item.order.orderDate != null ? #temporals.format(item.order.orderDate, 'MMM dd, yyyy') : 'N/A'}">
+                                                Oct 24, 2023</td>
+                                            <td th:text="${item.variant.product.name}">Ray-Ban Aviator</td>
+                                            <td th:text="'$' + ${item.unitPrice}">$150.00</td>
+                                            <td><span class="badge status-processing"
+                                                    th:text="${item.fulfillmentType}">Processing</span></td>
                                             <td class="text-end">
-                                                <button class="btn btn-action btn-light text-primary"
-                                                    title="View Details"><i class="fas fa-eye"></i></button>
+                                                <a th:href="@{/operational-staff/order/{id}(id=${item.order.orderId})}"
+                                                    class="btn btn-action btn-light text-primary"
+                                                    title="View Details"><i class="fas fa-eye"></i></a>
                                                 <button class="btn btn-action btn-light text-success" title="Ship"><i
                                                         class="fas fa-truck"></i></button>
                                             </td>
+                                        </tr>
+                                        <tr th:if="${#lists.isEmpty(stockItems)}">
+                                            <td colspan="7" class="text-center">No in-stock orders found.</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -410,19 +408,28 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td class="fw-medium">#PRE-223</td>
-                                            <td>Harvey Specter</td>
-                                            <td>Tom Ford FT5555</td>
-                                            <td>Nov 15, 2023</td>
-                                            <td><span class="text-success">Paid</span></td>
-                                            <td><span class="badge status-pending">Waiting Stock</span></td>
+                                        <tr th:each="item : ${preOrderItems}">
+                                            <td class="fw-medium" th:text="'#PRE-' + ${item.order.orderId}">#PRE-223
+                                            </td>
+                                            <td th:text="${item.order.user != null ? item.order.user.name : 'Guest'}">
+                                                Harvey Specter</td>
+                                            <td th:text="${item.variant.product.name}">Tom Ford FT5555</td>
+                                            <td
+                                                th:text="${item.preOrder != null && item.preOrder.expectedArrival != null ? #temporals.format(item.preOrder.expectedArrival, 'MMM dd, yyyy') : 'N/A'}">
+                                                Nov 15, 2023</td>
+                                            <td th:text="'$' + ${item.unitPrice}">$50.00</td>
+                                            <td><span class="badge status-pending"
+                                                    th:text="${item.fulfillmentType}">Waiting Stock</span></td>
                                             <td class="text-end">
-                                                <button class="btn btn-action btn-light text-primary" title="view"><i
-                                                        class="fas fa-eye"></i></button>
+                                                <a th:href="@{/operational-staff/order/{id}(id=${item.order.orderId})}"
+                                                    class="btn btn-action btn-light text-primary" title="view"><i
+                                                        class="fas fa-eye"></i></a>
                                                 <button class="btn btn-action btn-light text-warning"
                                                     title="Notify Customer"><i class="fas fa-bell"></i></button>
                                             </td>
+                                        </tr>
+                                        <tr th:if="${#lists.isEmpty(preOrderItems)}">
+                                            <td colspan="7" class="text-center">No pre-orders found.</td>
                                         </tr>
                                     </tbody>
                                 </table>

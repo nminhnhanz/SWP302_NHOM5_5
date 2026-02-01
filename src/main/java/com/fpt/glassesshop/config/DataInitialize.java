@@ -18,6 +18,10 @@ public class DataInitialize implements CommandLineRunner {
         private final ProductRepository productRepository;
         private final ProductVariantRepository productVariantRepository;
         private final LensOptionRepository lensOptionRepository;
+        private final OrderRepository orderRepository;
+        private final OrderItemRepository orderItemRepository;
+        private final PrescriptionRepository prescriptionRepository;
+        private final PreOrderRepository preOrderRepository;
         private final PromotionRepository promotionRepository;
 
         @Override
@@ -33,6 +37,9 @@ public class DataInitialize implements CommandLineRunner {
                 }
                 if (promotionRepository.count() == 0) {
                         seedPromotions();
+                }
+                if (orderRepository.count() == 0) {
+                        seedOrders();
                 }
         }
 
@@ -178,5 +185,102 @@ public class DataInitialize implements CommandLineRunner {
                                 .build();
 
                 promotionRepository.save(welcomePromo);
+        }
+
+        private void seedOrders() {
+                UserAccount customer = userAccountRepository.findAll().stream()
+                                .filter(u -> "CUSTOMER".equals(u.getRole()))
+                                .findFirst()
+                                .orElseThrow(() -> new RuntimeException("Customer not found"));
+
+                ProductVariant frameVariant = productVariantRepository.findAll().get(0);
+                LensOption lensOption = lensOptionRepository.findAll().get(0);
+
+                // 1. Prescription Order
+                Order prescriptionOrder = Order.builder()
+                                .user(customer)
+                                .orderDate(LocalDateTime.now().minusDays(2))
+                                .status("PENDING")
+                                .totalPrice(new BigDecimal("200.00"))
+                                .paymentStatus("PAID")
+                                .build();
+                orderRepository.save(prescriptionOrder);
+
+                OrderItem prescriptionItem = OrderItem.builder()
+                                .order(prescriptionOrder)
+                                .variant(frameVariant)
+                                .lensOption(lensOption)
+                                .quantity(1)
+                                .unitPrice(new BigDecimal("200.00"))
+                                .fulfillmentType("PENDING_REVIEW")
+                                .build();
+                orderItemRepository.save(prescriptionItem);
+
+                Prescription prescription = Prescription.builder()
+                                .orderItem(prescriptionItem)
+                                .sphRight(new BigDecimal("-2.00"))
+                                .sphLeft(new BigDecimal("-2.25"))
+                                .cylRight(new BigDecimal("-0.50"))
+                                .cylLeft(new BigDecimal("-0.75"))
+                                .axisRight(180)
+                                .axisLeft(170)
+                                .pd(new BigDecimal("63"))
+                                .doctorName("Dr. Smith")
+                                .expirationDate(java.time.LocalDate.now().plusYears(1))
+                                .status("ACTIVE")
+                                .build();
+                prescriptionRepository.save(prescription);
+
+                // 2. In Stock Order
+                Order stockOrder = Order.builder()
+                                .user(customer)
+                                .orderDate(LocalDateTime.now().minusDays(1))
+                                .status("PROCESSING")
+                                .totalPrice(new BigDecimal("150.00"))
+                                .paymentStatus("PAID")
+                                .build();
+                orderRepository.save(stockOrder);
+
+                ProductVariant stockVariant = productVariantRepository.findAll().get(1);
+
+                OrderItem stockItem = OrderItem.builder()
+                                .order(stockOrder)
+                                .variant(stockVariant)
+                                .quantity(1)
+                                .unitPrice(new BigDecimal("150.00"))
+                                .fulfillmentType("PROCESSING")
+                                .build();
+                orderItemRepository.save(stockItem);
+
+                // 3. Pre-Order
+                Order preOrderOrder = Order.builder()
+                                .user(customer)
+                                .orderDate(LocalDateTime.now())
+                                .status("PENDING")
+                                .totalPrice(new BigDecimal("50.00")) // Deposit
+                                .paymentStatus("PARTIALLY_PAID")
+                                .build();
+                orderRepository.save(preOrderOrder);
+
+                // Assuming the 3rd variant is the one we want to mock as pre-order or re-use
+                // one
+                ProductVariant preOrderVariant = productVariantRepository.findAll().get(0);
+
+                OrderItem preOrderItem = OrderItem.builder()
+                                .order(preOrderOrder)
+                                .variant(preOrderVariant)
+                                .quantity(1)
+                                .unitPrice(new BigDecimal("50.00"))
+                                .fulfillmentType("WAITING_STOCK")
+                                .build();
+                orderItemRepository.save(preOrderItem);
+
+                PreOrder preOrder = PreOrder.builder()
+                                .orderItem(preOrderItem)
+                                .expectedArrival(java.time.LocalDate.now().plusWeeks(2))
+                                .supplierName("Ray-Ban Official")
+                                .status("WAITING")
+                                .build();
+                preOrderRepository.save(preOrder);
         }
 }

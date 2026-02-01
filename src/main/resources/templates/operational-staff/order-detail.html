@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details | GlassesShop Ops</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --background-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-main: #2b2d42;
+            --text-muted: #6c757d;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-bg);
+            color: var(--text-main);
+        }
+
+        .navbar {
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.04);
+            padding: 1rem 2rem;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        .main-content {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid #f1f2f6;
+            padding: 1.5rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+        }
+
+        .info-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .status-badge {
+            padding: 0.35em 0.8em;
+            font-size: 0.875em;
+            font-weight: 600;
+            border-radius: 2rem;
+        }
+
+        .table thead th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            background-color: #f8f9fa;
+            border-bottom: none;
+            padding: 1rem 1.5rem;
+        }
+
+        .table tbody td {
+            padding: 1rem 1.5rem;
+            vertical-align: middle;
+            color: var(--text-main);
+            border-bottom: 1px solid #f1f2f6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/operational-staff/dashboard"><i class="fas fa-glasses me-2"></i>GlassesShop
+                Ops</a>
+            <div class="d-flex align-items-center">
+                <a href="/operational-staff/dashboard" class="btn btn-outline-secondary btn-sm me-3">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">Order Details</h2>
+                <p class="text-muted mb-0">Order ID: <span th:text="'#' + ${order.orderId}">#12345</span></p>
+            </div>
+            <div>
+                <span class="badge bg-primary fs-6" th:text="${order.status}">PENDING</span>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Customer Info -->
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-user me-2 text-primary"></i>Customer Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="info-label">Name</div>
+                            <div class="info-value" th:text="${order.user != null ? order.user.name : 'Guest'}">John Doe
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="info-label">Email</div>
+                            <div class="info-value" th:text="${order.user != null ? order.user.email : 'N/A'}">
+                                john@example.com</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="info-label">Phone</div>
+                            <div class="info-value" th:text="${order.user != null ? order.user.phone : 'N/A'}">
+                                123-456-7890</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Info -->
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-info-circle me-2 text-primary"></i>Order Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="info-label">Order Date</div>
+                            <div class="info-value"
+                                th:text="${order.orderDate != null ? #temporals.format(order.orderDate, 'MMM dd, yyyy HH:mm') : 'N/A'}">
+                                Oct 24, 2023</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="info-label">Payment Status</div>
+                            <div class="info-value">
+                                <span class="badge bg-success bg-opacity-10 text-success"
+                                    th:text="${order.paymentStatus}">PAID</span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="info-label">Total Amount</div>
+                            <div class="info-value fs-4 text-primary" th:text="'$' + ${order.totalPrice}">$200.00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Info (Placeholder) -->
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-truck me-2 text-primary"></i>Shipping Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="info-label">Shipping Address</div>
+                            <div class="info-value">123 Main St, New York, NY 10001</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="info-label">Shipping Method</div>
+                            <div class="info-value">Standard Shipping</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Order Items</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Type</th>
+                                <th>Lens Details</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Fulfillment Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="item : ${orderItems}">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img th:src="${item.variant.imageUrl}" alt="Product" class="rounded me-3"
+                                            width="48" height="48" th:if="${item.variant.imageUrl != null}">
+                                        <div>
+                                            <div class="fw-medium" th:text="${item.variant.product.name}">Product Name
+                                            </div>
+                                            <div class="small text-muted" th:text="${item.variant.color}">Color</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border"
+                                        th:text="${item.variant.product.productType}">FRAME</span>
+                                </td>
+                                <td>
+                                    <div th:if="${item.lensOption != null}">
+                                        <div th:text="${item.lensOption.type}">Single Vision</div>
+                                        <div class="small text-muted" th:text="${item.lensOption.thickness}">1.50</div>
+                                    </div>
+                                    <div th:unless="${item.lensOption != null}" class="text-muted">-</div>
+
+                                    <!-- Prescription Details -->
+                                    <div th:if="${item.prescription != null}" class="mt-2 p-2 bg-light rounded border">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <small class="fw-bold text-primary">Prescription Details</small>
+                                            <small class="badge bg-secondary"
+                                                th:text="${item.prescription.status}">ACTIVE</small>
+                                        </div>
+                                        <table class="table table-sm table-bordered mb-1 bg-white"
+                                            style="font-size: 0.75rem;">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Eye</th>
+                                                    <th>SPH</th>
+                                                    <th>CYL</th>
+                                                    <th>AXIS</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="fw-bold">OD (Right)</td>
+                                                    <td th:text="${item.prescription.sphRight}">-2.00</td>
+                                                    <td th:text="${item.prescription.cylRight}">-0.50</td>
+                                                    <td th:text="${item.prescription.axisRight}">180</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="fw-bold">OS (Left)</td>
+                                                    <td th:text="${item.prescription.sphLeft}">-2.25</td>
+                                                    <td th:text="${item.prescription.cylLeft}">-0.75</td>
+                                                    <td th:text="${item.prescription.axisLeft}">170</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <div class="d-flex justify-content-between" style="font-size: 0.75rem;">
+                                            <span><strong>PD:</strong> <span
+                                                    th:text="${item.prescription.pd}">63</span></span>
+                                            <span><strong>Dr:</strong> <span
+                                                    th:text="${item.prescription.doctorName}">Smith</span></span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td th:text="${item.quantity}">1</td>
+                                <td th:text="'$' + ${item.unitPrice}">$100.00</td>
+                                <td>
+                                    <span class="badge bg-info bg-opacity-10 text-info"
+                                        th:text="${item.fulfillmentType}">PROCESSING</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
