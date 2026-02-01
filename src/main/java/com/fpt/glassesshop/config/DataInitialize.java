@@ -8,9 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
@@ -21,7 +19,10 @@ public class DataInitialize implements CommandLineRunner {
         private final ProductVariantRepository productVariantRepository;
         private final LensOptionRepository lensOptionRepository;
         private final PromotionRepository promotionRepository;
-        private final PasswordEncoder passwordEncoder;
+        private final OrderRepository orderRepository;
+        private final OrderItemRepository orderItemRepository;
+        private final AddressRepository addressRepository;
+        private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
         @Override
         public void run(String... args) throws Exception {
@@ -37,15 +38,27 @@ public class DataInitialize implements CommandLineRunner {
                 if (promotionRepository.count() == 0) {
                         seedPromotions();
                 }
+                if (orderRepository.count() == 0) {
+                        seedOrders();
+                }
         }
 
         private void seedUsers() {
                 UserAccount admin = UserAccount.builder()
                                 .name("Admin User")
-                                        .email("admin@example.com")
+                                .email("admin@example.com")
                                 .phone("1234567890")
                                 .role("ADMIN")
                                 .passwordHash(passwordEncoder.encode("admin123"))
+                                .accountStatus("ACTIVE")
+                                .build();
+
+                UserAccount staff = UserAccount.builder()
+                                .name("Staff User")
+                                .email("staff@example.com")
+                                .phone("1122334455")
+                                .role("OPERATIONAL_STAFF")
+                                .passwordHash(passwordEncoder.encode("staff123"))
                                 .accountStatus("ACTIVE")
                                 .build();
 
@@ -58,7 +71,7 @@ public class DataInitialize implements CommandLineRunner {
                                 .accountStatus("ACTIVE")
                                 .build();
 
-                userAccountRepository.saveAll(Arrays.asList(admin, customer));
+                userAccountRepository.saveAll(Arrays.asList(admin, staff, customer));
         }
 
         private void seedProducts() {
@@ -181,5 +194,83 @@ public class DataInitialize implements CommandLineRunner {
                                 .build();
 
                 promotionRepository.save(welcomePromo);
+        }
+
+        private void seedOrders() {
+                UserAccount customer = userAccountRepository.findByEmail("john.doe@example.com").orElse(null);
+                if (customer == null)
+                        return;
+
+                Address address = Address.builder()
+                                .user(customer)
+                                .street("123 Main St")
+                                .city("Metropolis")
+                                .country("Sampleland")
+                                .build();
+                addressRepository.save(address);
+
+                ProductVariant aviatorGold = productVariantRepository.findAll().get(0);
+                LensOption singleVision = lensOptionRepository.findAll().get(0);
+
+                // 1. Prescription Order
+                Order o1 = Order.builder()
+                                .user(customer)
+                                .status("PENDING")
+                                .totalPrice(new BigDecimal("180.00"))
+                                .shippingAddress(address)
+                                .billingAddress(address)
+                                .paymentStatus("PAID")
+                                .build();
+                orderRepository.save(o1);
+
+                OrderItem i1 = OrderItem.builder()
+                                .order(o1)
+                                .variant(aviatorGold)
+                                .lensOption(singleVision)
+                                .quantity(1)
+                                .unitPrice(new BigDecimal("180.00"))
+                                .fulfillmentType("PRESCRIPTION")
+                                .build();
+                orderItemRepository.save(i1);
+
+                // 2. In-Stock Order
+                Order o2 = Order.builder()
+                                .user(customer)
+                                .status("SHIPPED")
+                                .totalPrice(new BigDecimal("150.00"))
+                                .shippingAddress(address)
+                                .billingAddress(address)
+                                .paymentStatus("PAID")
+                                .build();
+                orderRepository.save(o2);
+
+                OrderItem i2 = OrderItem.builder()
+                                .order(o2)
+                                .variant(aviatorGold)
+                                .quantity(1)
+                                .unitPrice(new BigDecimal("150.00"))
+                                .fulfillmentType("IN_STOCK")
+                                .build();
+                orderItemRepository.save(i2);
+
+                // 3. Pre-Order
+                Order o3 = Order.builder()
+                                .user(customer)
+                                .status("PENDING")
+                                .totalPrice(new BigDecimal("200.00"))
+                                .shippingAddress(address)
+                                .billingAddress(address)
+                                .paymentStatus("PAID")
+                                .build();
+                orderRepository.save(o3);
+
+                OrderItem i3 = OrderItem.builder()
+                                .order(o3)
+                                .variant(aviatorGold)
+                                .quantity(1)
+                                .unitPrice(new BigDecimal("200.00"))
+                                .fulfillmentType("PRE_ORDER")
+                                .build();
+                orderItemRepository.save(i3);
         }
 }

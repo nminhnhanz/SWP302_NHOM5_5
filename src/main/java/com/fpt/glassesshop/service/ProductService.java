@@ -20,7 +20,7 @@ public class ProductService {
         if (query == null || query.trim().isEmpty()) {
             return new ArrayList<>();
         }
-        return productRepository.findAllByNameContainingIgnoreCaseOrBrandContainingIgnoreCase(query, query);
+        return productRepository.findDistinctByNameContainingIgnoreCaseOrBrandContainingIgnoreCase(query, query);
     }
 
     public Product getProductById(Long id) {
