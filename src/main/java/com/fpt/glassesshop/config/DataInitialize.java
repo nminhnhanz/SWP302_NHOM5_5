@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Configuration;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -19,6 +21,7 @@ public class DataInitialize implements CommandLineRunner {
         private final ProductVariantRepository productVariantRepository;
         private final LensOptionRepository lensOptionRepository;
         private final PromotionRepository promotionRepository;
+        private final PasswordEncoder passwordEncoder;
 
         @Override
         public void run(String... args) throws Exception {
@@ -39,10 +42,10 @@ public class DataInitialize implements CommandLineRunner {
         private void seedUsers() {
                 UserAccount admin = UserAccount.builder()
                                 .name("Admin User")
-                                .email("admin@glassesshop.com")
+                                .email("admin@example.com")
                                 .phone("1234567890")
                                 .role("ADMIN")
-                                .passwordHash("hashed_password_admin") // In real app, use BCrypt
+                                .passwordHash(passwordEncoder.encode("admin123"))
                                 .accountStatus("ACTIVE")
                                 .build();
 
@@ -51,11 +54,11 @@ public class DataInitialize implements CommandLineRunner {
                                 .email("john.doe@example.com")
                                 .phone("0987654321")
                                 .role("CUSTOMER")
-                                .passwordHash("hashed_password_john")
+                                .passwordHash(passwordEncoder.encode("customer123"))
                                 .accountStatus("ACTIVE")
                                 .build();
 
-                userAccountRepository.saveAll(List.of(admin, customer));
+                userAccountRepository.saveAll(Arrays.asList(admin, customer));
         }
 
         private void seedProducts() {
@@ -91,7 +94,7 @@ public class DataInitialize implements CommandLineRunner {
                                 .status("AVAILABLE")
                                 .build();
 
-                productVariantRepository.saveAll(List.of(aviatorGold, aviatorBlack));
+                productVariantRepository.saveAll(Arrays.asList(aviatorGold, aviatorBlack));
 
                 // Product 2: Reading Glasses
                 Product readingGlasses = Product.builder()
@@ -163,7 +166,7 @@ public class DataInitialize implements CommandLineRunner {
                                 .price(new BigDecimal("100.00"))
                                 .build();
 
-                lensOptionRepository.saveAll(List.of(singleVision, highIndex, photochromic));
+                lensOptionRepository.saveAll(Arrays.asList(singleVision, highIndex, photochromic));
         }
 
         private void seedPromotions() {

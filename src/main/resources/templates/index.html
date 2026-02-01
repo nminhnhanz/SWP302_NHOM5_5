@@ -1,10 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>dashboard</title>
 </head>
-<body>
 
+<body>
+    <h1>Welcome to Glasses Shop Dashboard</h1>
+
+    <div style="margin-bottom: 20px;">
+        <form th:action="@{/products/search}" method="get">
+            <input type="text" name="query" required placeholder="Search by name or brand...">
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
+    <form th:action="@{/logout}" method="post">
+        <button type="submit">Logout</button>
+    </form>
 </body>
+
 </html>
