@@ -42,7 +42,7 @@ public class DataInitialize implements CommandLineRunner {
         private void seedUsers() {
                 UserAccount admin = UserAccount.builder()
                                 .name("Admin User")
-                                .email("admin@example.com")
+                                        .email("admin@example.com")
                                 .phone("1234567890")
                                 .role("ADMIN")
                                 .passwordHash(passwordEncoder.encode("admin123"))
