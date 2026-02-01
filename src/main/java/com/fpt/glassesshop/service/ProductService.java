@@ -20,7 +20,12 @@ public class ProductService {
         if (query == null || query.trim().isEmpty()) {
             return new ArrayList<>();
         }
-        return productRepository.findDistinctByNameContainingIgnoreCaseOrBrandContainingIgnoreCase(query, query);
+        List<Product> products = productRepository.findAllByNameContainingIgnoreCaseOrBrandContainingIgnoreCase(query,
+                query);
+        // Manually filter duplicates to avoid SQL DISTINCT error on TEXT column
+        return products.stream()
+                .filter(java.util.concurrent.ConcurrentHashMap.newKeySet()::add)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     public Product getProductById(Long id) {
