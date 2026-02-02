@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import com.fpt.glassesshop.entity.dto.AddressDTO;
 import com.fpt.glassesshop.entity.dto.OrderDTO;
 import com.fpt.glassesshop.entity.dto.OrderItemDTO;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -54,6 +56,32 @@ public class OrderService {
 
     public Optional<OrderDTO> getOrderDTOById(Long orderId) {
         return getOrderById(orderId).map(this::convertToDTO);
+    }
+
+    public void deleteOrder(Long id) {
+        if (!orderRepository.existsById(id)) {
+            throw new RuntimeException("Order not found with id: " + id);
+        }
+        orderRepository.deleteById(id);
+    }
+
+    public OrderDTO createOrder(OrderDTO dto) {
+        // Basic implementation for now - just saving the order entity
+        // Real implementation would handle items, addresses, etc.
+        Order order = Order.builder()
+                .status(dto.getStatus() != null ? dto.getStatus() : "PENDING")
+                .paymentStatus(dto.getPaymentStatus() != null ? dto.getPaymentStatus() : "UNPAID")
+                .totalPrice(dto.getTotalPrice())
+                .orderDate(LocalDateTime.now())
+                .build();
+
+        // Handle User
+        if (dto.getUserId() != null) {
+            order.setUser(com.fpt.glassesshop.entity.UserAccount.builder().userId(dto.getUserId()).build());
+        }
+
+        Order saved = orderRepository.save(order);
+        return convertToDTO(saved);
     }
 
     public List<OrderItem> getOrderItems(Long orderId) {

@@ -1,5 +1,6 @@
 package com.fpt.glassesshop.entity.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fpt.glassesshop.entity.Product;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -30,8 +32,12 @@ public class ProductDTO {
     private String description;
 
     @Schema(description = "Whether the product supports prescription lenses", example = "true")
+    @JsonProperty("isPrescriptionSupported")
     private boolean isPrescriptionSupported;
 
     @Schema(description = "Timestamp when the product was created")
     private LocalDateTime createdAt;
+
+    @Schema(description = "List of variants for this product")
+    private List<ProductVariantDTO> variants;
 }

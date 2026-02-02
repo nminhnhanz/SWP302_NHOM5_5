@@ -4,14 +4,16 @@ import com.fpt.glassesshop.entity.*;
 import com.fpt.glassesshop.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
-@Configuration
+@Component
 @RequiredArgsConstructor
+@Slf4j
 public class DataInitialize implements CommandLineRunner {
 
         private final UserAccountRepository userAccountRepository;
@@ -22,25 +24,34 @@ public class DataInitialize implements CommandLineRunner {
         private final OrderRepository orderRepository;
         private final OrderItemRepository orderItemRepository;
         private final AddressRepository addressRepository;
+        private final PrescriptionRepository prescriptionRepository;
+        private final PreOrderRepository preOrderRepository;
         private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
         @Override
         public void run(String... args) throws Exception {
+                log.info("Checking data initialization status...");
                 if (userAccountRepository.count() == 0) {
+                        log.info("Seeding users...");
                         seedUsers();
                 }
                 if (productRepository.count() == 0) {
+                        log.info("Seeding products...");
                         seedProducts();
                 }
                 if (lensOptionRepository.count() == 0) {
+                        log.info("Seeding lens options...");
                         seedLensOptions();
                 }
                 if (promotionRepository.count() == 0) {
+                        log.info("Seeding promotions...");
                         seedPromotions();
                 }
                 if (orderRepository.count() == 0) {
+                        log.info("Seeding orders...");
                         seedOrders();
                 }
+                log.info("Data initialization check complete. Product count: {}", productRepository.count());
         }
 
         private void seedUsers() {
@@ -233,6 +244,17 @@ public class DataInitialize implements CommandLineRunner {
                                 .build();
                 orderItemRepository.save(i1);
 
+                Prescription p1 = Prescription.builder()
+                                .orderItem(i1)
+                                .doctorName("Dr. Smith")
+                                .status("VERIFIED")
+                                .sphLeft(new BigDecimal("-1.50"))
+                                .sphRight(new BigDecimal("-1.75"))
+                                .pd(new BigDecimal("63.0"))
+                                .createdAt(LocalDateTime.now())
+                                .build();
+                prescriptionRepository.save(p1);
+
                 // 2. In-Stock Order
                 Order o2 = Order.builder()
                                 .user(customer)
@@ -272,5 +294,13 @@ public class DataInitialize implements CommandLineRunner {
                                 .fulfillmentType("PRE_ORDER")
                                 .build();
                 orderItemRepository.save(i3);
+
+                PreOrder po1 = PreOrder.builder()
+                                .orderItem(i3)
+                                .status("ORDERED_FROM_SUPPLIER")
+                                .supplierName("Global Optics")
+                                .expectedArrival(java.time.LocalDate.now().plusDays(14))
+                                .build();
+                preOrderRepository.save(po1);
         }
 }

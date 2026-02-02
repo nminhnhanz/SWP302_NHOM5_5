@@ -43,4 +43,23 @@ public class OrderRestController {
         List<OrderDTO> orders = orderService.getOrdersDTOByUserId(userId);
         return ResponseEntity.ok(ApiResponse.success(orders));
     }
+
+    @PostMapping
+    @Operation(summary = "Create a new order", description = "Adds a new order to the system")
+    public ResponseEntity<ApiResponse<OrderDTO>> createOrder(@RequestBody OrderDTO orderDTO) {
+        OrderDTO created = orderService.createOrder(orderDTO);
+        return ResponseEntity.status(201).body(ApiResponse.success("Order created successfully", created));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete an order", description = "Removes an order by its unique identifier")
+    public ResponseEntity<ApiResponse<Void>> deleteOrder(
+            @Parameter(description = "ID of the order to delete", example = "101") @PathVariable Long id) {
+        try {
+            orderService.deleteOrder(id);
+            return ResponseEntity.ok(ApiResponse.success("Order deleted successfully", null));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(ApiResponse.error(e.getMessage()));
+        }
+    }
 }
