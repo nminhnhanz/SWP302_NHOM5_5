@@ -7,14 +7,22 @@ import com.fpt.glassesshop.repository.ProductVariantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import com.fpt.glassesshop.entity.dto.ProductDTO;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ProductService {
     private final ProductRepository productRepository;
     private final ProductVariantRepository productVariantRepository;
+
+    public List<ProductDTO> getAllProducts() {
+        return productRepository.findAll().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
 
     public List<Product> searchProducts(String query) {
         if (query == null || query.trim().isEmpty()) {
@@ -25,7 +33,13 @@ public class ProductService {
         // Manually filter duplicates to avoid SQL DISTINCT error on TEXT column
         return products.stream()
                 .filter(java.util.concurrent.ConcurrentHashMap.newKeySet()::add)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
+    }
+
+    public List<ProductDTO> searchProductsDTO(String query) {
+        return searchProducts(query).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     public Product getProductById(Long id) {
@@ -33,7 +47,25 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
     }
 
+    public ProductDTO getProductDTOById(Long id) {
+        return productRepository.findById(id)
+                .map(this::convertToDTO)
+                .orElse(null);
+    }
+
     public List<ProductVariant> getVariantsByProductId(Long id) {
         return productVariantRepository.findByProduct_ProductId(id);
+    }
+
+    private ProductDTO convertToDTO(Product product) {
+        return ProductDTO.builder()
+                .productId(product.getProductId())
+                .productType(product.getProductType())
+                .name(product.getName())
+                .brand(product.getBrand())
+                .description(product.getDescription())
+                .isPrescriptionSupported(product.isPrescriptionSupported())
+                .createdAt(product.getCreatedAt())
+                .build();
     }
 }
