@@ -17,7 +17,7 @@ public class ProductDTO {
     @Schema(description = "Unique identifier of the product", example = "1")
     private Long productId;
 
-    @Schema(description = "Type of the product (e.g., EYEGLASSES, SUNGLASSES)", example = "EYEGLASSES")
+    @Schema(description = "Type of the product (e.g., FRAME, LENS, ACCESSORY)", example = "FRAME")
     private Product.ProductType productType;
 
     @Schema(description = "Name of the product", example = "Ray-Ban Aviator")
