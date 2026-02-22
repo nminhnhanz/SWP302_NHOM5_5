@@ -69,4 +69,20 @@ public class OrderItemService {
         stats.put("IN_STOCK", countInStockItems());
         return stats;
     }
+
+    public List<OrderItem> getPendingPrescriptionItems() {
+        return orderItemRepository.findPendingPrescriptionItems();
+    }
+
+    public long countPendingPrescriptionItems() {
+        return orderItemRepository.countPendingPrescriptionItems();
+    }
+
+    public List<OrderItem> getWaitingStockPreOrderItems() {
+        return orderItemRepository.findWaitingStockPreOrderItems();
+    }
+
+    public long countWaitingStockPreOrderItems() {
+        return orderItemRepository.countWaitingStockPreOrderItems();
+    }
 }

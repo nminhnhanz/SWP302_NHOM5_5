@@ -22,7 +22,7 @@ public class OperationalStaffController {
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        // Stats
+        /*// Stats
         model.addAttribute("prescriptionCount", orderItemService.countPrescriptionItems());
         model.addAttribute("preOrderCount", orderItemService.countPreOrderItems());
         model.addAttribute("inStockCount", orderItemService.countInStockItems());
@@ -33,7 +33,18 @@ public class OperationalStaffController {
         model.addAttribute("inStockItems", orderItemService.getInStockItems());
 
         return "operational-staff/dashboard";
+*/
+        // Stats: chỉ tính cái cần xử lý
+        model.addAttribute("prescriptionCount", orderItemService.countPendingPrescriptionItems());
+        model.addAttribute("preOrderCount", orderItemService.countWaitingStockPreOrderItems());
+        model.addAttribute("inStockCount", orderItemService.countInStockItems());
 
+        // Lists: chỉ list cái cần xử lý
+        model.addAttribute("prescriptionItems", orderItemService.getPendingPrescriptionItems());
+        model.addAttribute("preOrderItems", orderItemService.getWaitingStockPreOrderItems());
+        model.addAttribute("inStockItems", orderItemService.getInStockItems());
+
+        return "operational-staff/dashboard";
     }
 
     @GetMapping("/order/{id}")
@@ -44,4 +55,6 @@ public class OperationalStaffController {
         });
         return "operational-staff/order-detail";
     }
+
+
 }

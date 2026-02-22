@@ -32,4 +32,37 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     @Query("SELECT COUNT(oi) FROM OrderItem oi WHERE oi.variant.product.productId = :productId")
     long countByProductId(Long productId);
 
+    // THÊM VÀO OrderItemRepository
+
+    @Query("""
+    SELECT oi
+    FROM OrderItem oi
+    JOIN oi.prescription p
+    WHERE UPPER(p.status) = 'PENDING'
+""")
+    List<OrderItem> findPendingPrescriptionItems();
+
+    @Query("""
+    SELECT COUNT(oi)
+    FROM OrderItem oi
+    JOIN oi.prescription p
+    WHERE UPPER(p.status) = 'PENDING'
+""")
+    long countPendingPrescriptionItems();
+
+    @Query("""
+    SELECT oi
+    FROM OrderItem oi
+    JOIN oi.preOrder po
+    WHERE UPPER(po.status) = 'WAITING_STOCK'
+""")
+    List<OrderItem> findWaitingStockPreOrderItems();
+
+    @Query("""
+    SELECT COUNT(oi)
+    FROM OrderItem oi
+    JOIN oi.preOrder po
+    WHERE UPPER(po.status) = 'WAITING_STOCK'
+""")
+    long countWaitingStockPreOrderItems();
 }
