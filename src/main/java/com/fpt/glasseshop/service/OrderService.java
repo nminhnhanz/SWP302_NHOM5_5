@@ -1,20 +1,22 @@
 package com.fpt.glasseshop.service;
 
-import com.fpt.glasseshop.entity.Order;
-import com.fpt.glasseshop.entity.OrderItem;
+import com.fpt.glasseshop.entity.*;
+import com.fpt.glasseshop.entity.dto.*;
+import com.fpt.glasseshop.exception.ResourceNotFoundException;
+import com.fpt.glasseshop.repository.AddressRepository;
+import com.fpt.glasseshop.repository.CartRepository;
 import com.fpt.glasseshop.repository.OrderRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import com.fpt.glasseshop.entity.dto.AddressDTO;
-import com.fpt.glasseshop.entity.dto.OrderDTO;
-import com.fpt.glasseshop.entity.dto.OrderItemDTO;
-
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +24,9 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderItemService orderItemService;
+    private final CartRepository cartRepository;
+    private final AddressRepository addressRepository;
+    private final CartService cartService;
 
     public Order saveOrder(Order order) {
         Order savedOrder = orderRepository.save(order);
@@ -63,6 +68,69 @@ public class OrderService {
             throw new RuntimeException("Order not found with id: " + id);
         }
         orderRepository.deleteById(id);
+    }
+
+    @Transactional
+    public OrderDTO createOrderFromCart(UserAccount user, CreateOrderRequest request) {
+        // 1. Get User's Cart
+        Cart cart = cartRepository.findByUserUserId(user.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found for user: " + user.getUserId()));
+
+        if (cart.getItems() == null || cart.getItems().isEmpty()) {
+            throw new IllegalArgumentException("Cannot create order from an empty cart");
+        }
+
+        // 2. Resolve Addresses
+        Address shippingAddress = addressRepository.findById(request.getShippingAddressId())
+                .orElseThrow(() -> new ResourceNotFoundException("Shipping address not found"));
+        Address billingAddress = addressRepository.findById(request.getBillingAddressId())
+                .orElseThrow(() -> new ResourceNotFoundException("Billing address not found"));
+
+        // 3. Create Order Object
+        BigDecimal totalPrice = BigDecimal.ZERO;
+        Order order = Order.builder()
+                .user(user)
+                .shippingAddress(shippingAddress)
+                .billingAddress(billingAddress)
+                .status("PENDING")
+                .paymentStatus("UNPAID")
+                .orderDate(LocalDateTime.now())
+                .orderItems(new ArrayList<>())
+                .build();
+
+        // 4. Create OrderItems from CartItems and Calculate Total
+        for (CartItem cartItem : cart.getItems()) {
+            BigDecimal variantPrice = cartItem.getVariant().getPrice() != null ? cartItem.getVariant().getPrice()
+                    : BigDecimal.ZERO;
+            BigDecimal lensPrice = (cartItem.getLensOption() != null && cartItem.getLensOption().getPrice() != null)
+                    ? cartItem.getLensOption().getPrice()
+                    : BigDecimal.ZERO;
+            BigDecimal unitPrice = variantPrice.add(lensPrice);
+            BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(cartItem.getQuantity()));
+
+            totalPrice = totalPrice.add(subtotal);
+
+            OrderItem orderItem = OrderItem.builder()
+                    .order(order)
+                    .variant(cartItem.getVariant())
+                    .lensOption(cartItem.getLensOption())
+                    .quantity(cartItem.getQuantity())
+                    .unitPrice(unitPrice)
+                    .fulfillmentType("IN_STOCK") // Default
+                    .build();
+
+            order.getOrderItems().add(orderItem);
+        }
+
+        order.setTotalPrice(totalPrice);
+
+        // 5. Save Order (Cascade should save items)
+        Order savedOrder = orderRepository.save(order);
+
+        // 6. Clear Cart
+        cartService.clearCart(user);
+
+        return convertToDTO(savedOrder);
     }
 
     public OrderDTO createOrder(OrderDTO dto) {
