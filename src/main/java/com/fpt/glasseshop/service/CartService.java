@@ -130,6 +130,13 @@ public class CartService {
                 });
     }
 
+    @Transactional
+    public void clearCart(UserAccount user) {
+        Cart cart = getOrCreateCart(user);
+        cart.getItems().clear();
+        cartRepository.save(cart);
+    }
+
     private CartDTO convertToDTO(Cart cart) {
         BigDecimal totalPrice = BigDecimal.ZERO;
         int totalItems = 0;
