@@ -45,6 +45,9 @@ public class OrderDTO {
     @Schema(description = "Payment status of the order", example = "PAID")
     private String paymentStatus;
 
+    @Schema(description = "Payment method used", example = "CREDIT_CARD")
+    private String paymentMethod;
+
     @Schema(description = "List of items in the order")
     private List<OrderItemDTO> orderItems;
 

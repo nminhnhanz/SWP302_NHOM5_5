@@ -94,6 +94,7 @@ public class OrderService {
                 .billingAddress(billingAddress)
                 .status("PENDING")
                 .paymentStatus("UNPAID")
+                .paymentMethod(request.getPaymentMethod())
                 .orderDate(LocalDateTime.now())
                 .orderItems(new ArrayList<>())
                 .build();
@@ -166,6 +167,7 @@ public class OrderService {
                 .status(order.getStatus())
                 .totalPrice(order.getTotalPrice())
                 .paymentStatus(order.getPaymentStatus())
+                .paymentMethod(order.getPaymentMethod())
                 .shippingAddress(mapToAddressDTO(order.getShippingAddress()))
                 .billingAddress(mapToAddressDTO(order.getBillingAddress()))
                 .orderItems(order.getOrderItems() != null ? order.getOrderItems().stream()
