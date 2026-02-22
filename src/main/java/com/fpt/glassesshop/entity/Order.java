@@ -1,4 +1,4 @@
-package com.fpt.glasseshop.entity;
+package com.fpt.glassesshop.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

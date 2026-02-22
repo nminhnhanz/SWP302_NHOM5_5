@@ -1,4 +1,4 @@
-package com.fpt.glasseshop.config;
+package com.fpt.glassesshop.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

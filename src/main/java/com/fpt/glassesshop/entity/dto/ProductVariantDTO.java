@@ -1,4 +1,4 @@
-package com.fpt.glasseshop.entity.dto;
+package com.fpt.glassesshop.entity.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

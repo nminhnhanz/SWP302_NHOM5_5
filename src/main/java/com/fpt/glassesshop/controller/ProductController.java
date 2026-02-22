@@ -1,7 +1,7 @@
-package com.fpt.glasseshop.controller;
+package com.fpt.glassesshop.controller;
 
-import com.fpt.glasseshop.entity.Product;
-import com.fpt.glasseshop.service.ProductService;
+import com.fpt.glassesshop.entity.Product;
+import com.fpt.glassesshop.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

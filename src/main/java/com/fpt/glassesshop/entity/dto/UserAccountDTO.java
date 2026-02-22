@@ -1,4 +1,4 @@
-package com.fpt.glasseshop.entity.dto;
+package com.fpt.glassesshop.entity.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

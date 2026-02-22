@@ -1,4 +1,4 @@
-package com.fpt.glasseshop.exception;
+package com.fpt.glassesshop.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

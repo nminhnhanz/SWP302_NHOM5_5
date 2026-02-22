@@ -1,10 +1,10 @@
-package com.fpt.glasseshop;
+package com.fpt.glassesshop;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class SwpglasseshopApplicationTests {
+class SwpGlassesShopApplicationTests {
 
     @Test
     void contextLoads() {

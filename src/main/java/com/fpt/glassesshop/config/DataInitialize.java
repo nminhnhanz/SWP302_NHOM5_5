@@ -1,7 +1,7 @@
-package com.fpt.glasseshop.config;
+package com.fpt.glassesshop.config;
 
-import com.fpt.glasseshop.entity.*;
-import com.fpt.glasseshop.repository.*;
+import com.fpt.glassesshop.entity.*;
+import com.fpt.glassesshop.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;

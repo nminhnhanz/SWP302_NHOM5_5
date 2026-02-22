@@ -1,7 +1,7 @@
-package com.fpt.glasseshop.controller;
+package com.fpt.glassesshop.controller;
 
-import com.fpt.glasseshop.service.OrderItemService;
-import com.fpt.glasseshop.service.OrderService;
+import com.fpt.glassesshop.service.OrderItemService;
+import com.fpt.glassesshop.service.OrderService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.access.prepost.PreAuthorize;

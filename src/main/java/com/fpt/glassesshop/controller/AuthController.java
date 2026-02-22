@@ -1,4 +1,4 @@
-package com.fpt.glasseshop.controller;
+package com.fpt.glassesshop.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

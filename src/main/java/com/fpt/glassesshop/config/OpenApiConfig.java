@@ -1,4 +1,4 @@
-package com.fpt.glasseshop.config;
+package com.fpt.glassesshop.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -18,6 +18,6 @@ public class OpenApiConfig {
                         .description("API documentation for the Glasses Shop SWP project.")
                         .contact(new Contact()
                                 .name("SWP Team")
-                                .email("support@glasseshop.com")));
+                                .email("support@glassesshop.com")));
     }
 }
