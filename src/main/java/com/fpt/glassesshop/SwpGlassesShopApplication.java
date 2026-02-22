@@ -1,15 +1,15 @@
-package com.fpt.glassesshop;
+package com.fpt.glasseshop;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SwpGlassesShopApplication {
+public class SwpglasseshopApplication {
 
     
     public static void main(String[] args) {
 
-        SpringApplication.run(SwpGlassesShopApplication.class, args);
+        SpringApplication.run(SwpglasseshopApplication.class, args);
 
     }
 

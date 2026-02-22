@@ -1,15 +1,15 @@
-package com.fpt.glassesshop.service;
+package com.fpt.glasseshop.service;
 
-import com.fpt.glassesshop.entity.Order;
-import com.fpt.glassesshop.entity.OrderItem;
-import com.fpt.glassesshop.repository.OrderRepository;
+import com.fpt.glasseshop.entity.Order;
+import com.fpt.glasseshop.entity.OrderItem;
+import com.fpt.glasseshop.repository.OrderRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import com.fpt.glassesshop.entity.dto.AddressDTO;
-import com.fpt.glassesshop.entity.dto.OrderDTO;
-import com.fpt.glassesshop.entity.dto.OrderItemDTO;
+import com.fpt.glasseshop.entity.dto.AddressDTO;
+import com.fpt.glasseshop.entity.dto.OrderDTO;
+import com.fpt.glasseshop.entity.dto.OrderItemDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -77,7 +77,7 @@ public class OrderService {
 
         // Handle User
         if (dto.getUserId() != null) {
-            order.setUser(com.fpt.glassesshop.entity.UserAccount.builder().userId(dto.getUserId()).build());
+            order.setUser(com.fpt.glasseshop.entity.UserAccount.builder().userId(dto.getUserId()).build());
         }
 
         Order saved = orderRepository.save(order);
@@ -107,7 +107,7 @@ public class OrderService {
                 .build();
     }
 
-    private AddressDTO mapToAddressDTO(com.fpt.glassesshop.entity.Address address) {
+    private AddressDTO mapToAddressDTO(com.fpt.glasseshop.entity.Address address) {
         if (address == null)
             return null;
         return AddressDTO.builder()

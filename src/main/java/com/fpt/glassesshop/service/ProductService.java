@@ -1,13 +1,13 @@
-package com.fpt.glassesshop.service;
+package com.fpt.glasseshop.service;
 
-import com.fpt.glassesshop.entity.Product;
-import com.fpt.glassesshop.entity.ProductVariant;
-import com.fpt.glassesshop.repository.ProductRepository;
-import com.fpt.glassesshop.repository.ProductVariantRepository;
+import com.fpt.glasseshop.entity.Product;
+import com.fpt.glasseshop.entity.ProductVariant;
+import com.fpt.glasseshop.repository.ProductRepository;
+import com.fpt.glasseshop.repository.ProductVariantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import com.fpt.glassesshop.entity.dto.ProductDTO;
+import com.fpt.glasseshop.entity.dto.ProductDTO;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class ProductService {
     private final ProductRepository productRepository;
     private final ProductVariantRepository productVariantRepository;
-    private final com.fpt.glassesshop.repository.OrderItemRepository orderItemRepository;
+    private final com.fpt.glasseshop.repository.OrderItemRepository orderItemRepository;
 
     public List<ProductDTO> getAllProducts() {
         return productRepository.findAll().stream()
@@ -120,8 +120,8 @@ public class ProductService {
                 .build();
     }
 
-    private com.fpt.glassesshop.entity.dto.ProductVariantDTO mapToVariantDTO(ProductVariant variant) {
-        return com.fpt.glassesshop.entity.dto.ProductVariantDTO.builder()
+    private com.fpt.glasseshop.entity.dto.ProductVariantDTO mapToVariantDTO(ProductVariant variant) {
+        return com.fpt.glasseshop.entity.dto.ProductVariantDTO.builder()
                 .variantId(variant.getVariantId())
                 .productId(variant.getProduct() != null ? variant.getProduct().getProductId() : null)
                 .price(variant.getPrice())

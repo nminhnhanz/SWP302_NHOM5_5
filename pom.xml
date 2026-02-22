@@ -8,11 +8,11 @@
         <version>4.0.1</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.fpt.glassesshop</groupId>
-    <artifactId>GlassesShop</artifactId>
+    <groupId>com.fpt.glasseshop</groupId>
+    <artifactId>glasseshop</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>swp-glassesShop</name>
-    <description>swp-glassesShop</description>
+    <name>swp-glasseshop</name>
+    <description>swp-glasseshop</description>
     <url/>
     <licenses>
         <license/>

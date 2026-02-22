@@ -1,6 +1,6 @@
-package com.fpt.glassesshop.repository;
+package com.fpt.glasseshop.repository;
 
-import com.fpt.glassesshop.entity.Prescription;
+import com.fpt.glasseshop.entity.Prescription;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

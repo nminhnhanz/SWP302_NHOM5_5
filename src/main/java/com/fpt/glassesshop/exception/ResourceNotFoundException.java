@@ -1,4 +1,4 @@
-package com.fpt.glassesshop.exception;
+package com.fpt.glasseshop.exception;
 
 public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String message) {

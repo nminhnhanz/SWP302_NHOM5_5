@@ -47,13 +47,13 @@ This application manages the end-to-end process of an online optical shop, inclu
 1. **Clone the repository**
    ```bash
    git clone https://github.com/nminhnhanz/SWP302_NHOM5_5.git
-   cd swp-glassesShop
+   cd swp-glasseshop
    ```
 
 2. **Configure Database**
    Update `src/main/resources/application.properties` (or `application.yml`) with your database credentials:
    ```properties
-   spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=GlassesShop
+   spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=glasseshop
    spring.datasource.username=your_username
    spring.datasource.password=your_password
    ```
@@ -71,7 +71,7 @@ This application manages the end-to-end process of an online optical shop, inclu
 ## Project Structure
 
 ```
-src/main/java/com/fpt/glassesshop
+src/main/java/com/fpt/glasseshop
 ├── config/       # Configuration classes
 ├── controller/   # Web controllers
 ├── entity/       # JPA Entities (Database model)

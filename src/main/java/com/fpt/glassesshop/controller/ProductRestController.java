@@ -1,8 +1,8 @@
-package com.fpt.glassesshop.controller;
+package com.fpt.glasseshop.controller;
 
-import com.fpt.glassesshop.entity.dto.ApiResponse;
-import com.fpt.glassesshop.entity.dto.ProductDTO;
-import com.fpt.glassesshop.service.ProductService;
+import com.fpt.glasseshop.entity.dto.ApiResponse;
+import com.fpt.glasseshop.entity.dto.ProductDTO;
+import com.fpt.glasseshop.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

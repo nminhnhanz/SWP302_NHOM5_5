@@ -1,7 +1,7 @@
-package com.fpt.glassesshop.service;
+package com.fpt.glasseshop.service;
 
-import com.fpt.glassesshop.entity.UserAccount;
-import com.fpt.glassesshop.repository.UserAccountRepository;
+import com.fpt.glasseshop.entity.UserAccount;
+import com.fpt.glasseshop.repository.UserAccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;

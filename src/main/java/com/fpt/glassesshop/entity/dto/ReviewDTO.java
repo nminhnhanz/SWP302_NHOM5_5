@@ -1,4 +1,4 @@
-package com.fpt.glassesshop.entity.dto;
+package com.fpt.glasseshop.entity.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

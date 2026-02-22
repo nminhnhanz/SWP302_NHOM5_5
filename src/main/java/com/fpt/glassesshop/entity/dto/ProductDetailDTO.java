@@ -1,6 +1,6 @@
-package com.fpt.glassesshop.entity.dto;
+package com.fpt.glasseshop.entity.dto;
 
-import com.fpt.glassesshop.entity.Product;
+import com.fpt.glasseshop.entity.Product;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

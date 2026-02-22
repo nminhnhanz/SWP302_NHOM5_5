@@ -1,7 +1,7 @@
-package com.fpt.glassesshop.service;
+package com.fpt.glasseshop.service;
 
-import com.fpt.glassesshop.entity.OrderItem;
-import com.fpt.glassesshop.repository.OrderItemRepository;
+import com.fpt.glasseshop.entity.OrderItem;
+import com.fpt.glasseshop.repository.OrderItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
