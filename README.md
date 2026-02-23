@@ -1,4 +1,3 @@
-# Glasses Shop Application
 
 A comprehensive e-commerce platform for purchasing glasses, frames, and accessories, built with Spring Boot.
 

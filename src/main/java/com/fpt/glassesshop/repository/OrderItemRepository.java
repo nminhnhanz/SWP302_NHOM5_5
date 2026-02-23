@@ -29,4 +29,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     @Query("SELECT COUNT(oi) FROM OrderItem oi WHERE NOT EXISTS (SELECT p FROM Prescription p WHERE p.orderItem = oi) AND NOT EXISTS (SELECT po FROM PreOrder po WHERE po.orderItem = oi)")
     long countInStockItems();
 
+    @Query("SELECT COUNT(oi) FROM OrderItem oi WHERE oi.variant.product.productId = :productId")
+    long countByProductId(Long productId);
+
 }

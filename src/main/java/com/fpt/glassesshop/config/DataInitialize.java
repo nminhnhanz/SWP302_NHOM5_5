@@ -4,14 +4,16 @@ import com.fpt.glassesshop.entity.*;
 import com.fpt.glassesshop.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Arrays;
 
-@Configuration
+@Component
 @RequiredArgsConstructor
+@Slf4j
 public class DataInitialize implements CommandLineRunner {
 
         private final UserAccountRepository userAccountRepository;
@@ -23,33 +25,60 @@ public class DataInitialize implements CommandLineRunner {
         private final PrescriptionRepository prescriptionRepository;
         private final PreOrderRepository preOrderRepository;
         private final PromotionRepository promotionRepository;
+        private final OrderRepository orderRepository;
+        private final OrderItemRepository orderItemRepository;
+        private final AddressRepository addressRepository;
+        private final PrescriptionRepository prescriptionRepository;
+        private final PreOrderRepository preOrderRepository;
+        private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
         @Override
         public void run(String... args) throws Exception {
+                log.info("Checking data initialization status...");
                 if (userAccountRepository.count() == 0) {
+                        log.info("Seeding users...");
                         seedUsers();
                 }
                 if (productRepository.count() == 0) {
+                        log.info("Seeding products...");
                         seedProducts();
                 }
                 if (lensOptionRepository.count() == 0) {
+                        log.info("Seeding lens options...");
                         seedLensOptions();
                 }
                 if (promotionRepository.count() == 0) {
+                        log.info("Seeding promotions...");
                         seedPromotions();
                 }
                 if (orderRepository.count() == 0) {
+<<<<<<< HEAD
                         seedOrders();
                 }
+=======
+                        log.info("Seeding orders...");
+                        seedOrders();
+                }
+                log.info("Data initialization check complete. Product count: {}", productRepository.count());
+>>>>>>> main
         }
 
         private void seedUsers() {
                 UserAccount admin = UserAccount.builder()
                                 .name("Admin User")
-                                .email("admin@glassesshop.com")
+                                .email("admin@example.com")
                                 .phone("1234567890")
                                 .role("ADMIN")
-                                .passwordHash("hashed_password_admin") // In real app, use BCrypt
+                                .passwordHash(passwordEncoder.encode("admin123"))
+                                .accountStatus("ACTIVE")
+                                .build();
+
+                UserAccount staff = UserAccount.builder()
+                                .name("Staff User")
+                                .email("staff@example.com")
+                                .phone("1122334455")
+                                .role("OPERATIONAL_STAFF")
+                                .passwordHash(passwordEncoder.encode("staff123"))
                                 .accountStatus("ACTIVE")
                                 .build();
 
@@ -58,11 +87,11 @@ public class DataInitialize implements CommandLineRunner {
                                 .email("john.doe@example.com")
                                 .phone("0987654321")
                                 .role("CUSTOMER")
-                                .passwordHash("hashed_password_john")
+                                .passwordHash(passwordEncoder.encode("customer123"))
                                 .accountStatus("ACTIVE")
                                 .build();
 
-                userAccountRepository.saveAll(List.of(admin, customer));
+                userAccountRepository.saveAll(Arrays.asList(admin, staff, customer));
         }
 
         private void seedProducts() {
@@ -98,7 +127,7 @@ public class DataInitialize implements CommandLineRunner {
                                 .status("AVAILABLE")
                                 .build();
 
-                productVariantRepository.saveAll(List.of(aviatorGold, aviatorBlack));
+                productVariantRepository.saveAll(Arrays.asList(aviatorGold, aviatorBlack));
 
                 // Product 2: Reading Glasses
                 Product readingGlasses = Product.builder()
@@ -170,7 +199,7 @@ public class DataInitialize implements CommandLineRunner {
                                 .price(new BigDecimal("100.00"))
                                 .build();
 
-                lensOptionRepository.saveAll(List.of(singleVision, highIndex, photochromic));
+                lensOptionRepository.saveAll(Arrays.asList(singleVision, highIndex, photochromic));
         }
 
         private void seedPromotions() {
@@ -188,6 +217,7 @@ public class DataInitialize implements CommandLineRunner {
         }
 
         private void seedOrders() {
+<<<<<<< HEAD
                 UserAccount customer = userAccountRepository.findAll().stream()
                                 .filter(u -> "CUSTOMER".equals(u.getRole()))
                                 .findFirst()
@@ -282,5 +312,101 @@ public class DataInitialize implements CommandLineRunner {
                                 .status("WAITING")
                                 .build();
                 preOrderRepository.save(preOrder);
+=======
+                UserAccount customer = userAccountRepository.findByEmail("john.doe@example.com").orElse(null);
+                if (customer == null)
+                        return;
+
+                Address address = Address.builder()
+                                .user(customer)
+                                .street("123 Main St")
+                                .city("Metropolis")
+                                .country("Sampleland")
+                                .build();
+                addressRepository.save(address);
+
+                ProductVariant aviatorGold = productVariantRepository.findAll().get(0);
+                LensOption singleVision = lensOptionRepository.findAll().get(0);
+
+                // 1. Prescription Order
+                Order o1 = Order.builder()
+                                .user(customer)
+                                .status("PENDING")
+                                .totalPrice(new BigDecimal("180.00"))
+                                .shippingAddress(address)
+                                .billingAddress(address)
+                                .paymentStatus("PAID")
+                                .build();
+                orderRepository.save(o1);
+
+                OrderItem i1 = OrderItem.builder()
+                                .order(o1)
+                                .variant(aviatorGold)
+                                .lensOption(singleVision)
+                                .quantity(1)
+                                .unitPrice(new BigDecimal("180.00"))
+                                .fulfillmentType("PRESCRIPTION")
+                                .build();
+                orderItemRepository.save(i1);
+
+                Prescription p1 = Prescription.builder()
+                                .orderItem(i1)
+                                .doctorName("Dr. Smith")
+                                .status("VERIFIED")
+                                .sphLeft(new BigDecimal("-1.50"))
+                                .sphRight(new BigDecimal("-1.75"))
+                                .pd(new BigDecimal("63.0"))
+                                .createdAt(LocalDateTime.now())
+                                .build();
+                prescriptionRepository.save(p1);
+
+                // 2. In-Stock Order
+                Order o2 = Order.builder()
+                                .user(customer)
+                                .status("SHIPPED")
+                                .totalPrice(new BigDecimal("150.00"))
+                                .shippingAddress(address)
+                                .billingAddress(address)
+                                .paymentStatus("PAID")
+                                .build();
+                orderRepository.save(o2);
+
+                OrderItem i2 = OrderItem.builder()
+                                .order(o2)
+                                .variant(aviatorGold)
+                                .quantity(1)
+                                .unitPrice(new BigDecimal("150.00"))
+                                .fulfillmentType("IN_STOCK")
+                                .build();
+                orderItemRepository.save(i2);
+
+                // 3. Pre-Order
+                Order o3 = Order.builder()
+                                .user(customer)
+                                .status("PENDING")
+                                .totalPrice(new BigDecimal("200.00"))
+                                .shippingAddress(address)
+                                .billingAddress(address)
+                                .paymentStatus("PAID")
+                                .build();
+                orderRepository.save(o3);
+
+                OrderItem i3 = OrderItem.builder()
+                                .order(o3)
+                                .variant(aviatorGold)
+                                .quantity(1)
+                                .unitPrice(new BigDecimal("200.00"))
+                                .fulfillmentType("PRE_ORDER")
+                                .build();
+                orderItemRepository.save(i3);
+
+                PreOrder po1 = PreOrder.builder()
+                                .orderItem(i3)
+                                .status("ORDERED_FROM_SUPPLIER")
+                                .supplierName("Global Optics")
+                                .expectedArrival(java.time.LocalDate.now().plusDays(14))
+                                .build();
+                preOrderRepository.save(po1);
+>>>>>>> main
         }
 }
