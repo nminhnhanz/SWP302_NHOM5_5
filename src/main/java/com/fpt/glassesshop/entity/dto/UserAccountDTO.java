@@ -31,9 +31,7 @@ public class UserAccountDTO {
     @Schema(description = "Role of the user in the system", example = "CUSTOMER")
     private String role;
 
-    @Schema(description = "Password for the account (write-only)", example = "password123")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Schema(description = "Password hash for the account", example = "$2a$10$...")
     private String password;
 
     @Schema(description = "Current status of the account", example = "ACTIVE")

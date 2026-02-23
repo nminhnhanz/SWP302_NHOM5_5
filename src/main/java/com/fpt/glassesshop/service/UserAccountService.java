@@ -54,6 +54,7 @@ public class UserAccountService {
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .role(user.getRole())
+                .password(user.getPasswordHash())
                 .accountStatus(user.getAccountStatus())
                 .createdAt(user.getCreatedAt())
                 .build();
