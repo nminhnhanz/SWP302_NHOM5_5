@@ -96,5 +96,5 @@ Hibernate:
         count_big(*) 
     from
         product p1_0
-2026-02-02T15:41:20.249+07:00  INFO 36420 --- [glassesShop] [  restartedMain] c.fpt.glassesshop.config.DataInitialize  : Data initialization check complete. Product count: 3
-2026-02-02T15:41:20.251+07:00  INFO 36420 --- [glassesShop] [  restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged
+2026-02-02T15:41:20.249+07:00  INFO 36420 --- [glasseshop] [  restartedMain] c.fpt.glasseshop.config.DataInitialize  : Data initialization check complete. Product count: 3
+2026-02-02T15:41:20.251+07:00  INFO 36420 --- [glasseshop] [  restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged
