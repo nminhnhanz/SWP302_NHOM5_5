@@ -19,6 +19,14 @@ public class OrderWorkflowService {
 
     private final OrderRepository orderRepository;
 
+    /**
+     * Rule:
+     * 1) Any prescription REJECTED => Order REJECTED
+     * 2) Any prescription PENDING => Order AWAITING_PRESCRIPTION_APPROVAL
+     * 3) Any preorder WAITING_STOCK => Order PREORDER_WAITING_STOCK
+     * 4) paymentStatus PAID => Order PROCESSING
+     * 5) else => Order CONFIRMED
+     */
     @Transactional
     public Order recompute(Long orderId) {
         Order order = orderRepository.findById(orderId)
