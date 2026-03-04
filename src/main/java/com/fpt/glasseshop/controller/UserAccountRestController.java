@@ -58,7 +58,7 @@ public class UserAccountRestController {
         }
     }
     // Chỉ cần login là dùng được
-    @GetMapping
+    @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<UserResponseDTO>> me(
             @AuthenticationPrincipal UserDetails userDetails
