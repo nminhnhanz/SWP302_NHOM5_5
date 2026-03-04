@@ -29,10 +29,21 @@ public class OrderRestController {
 
     private UserAccount getAuthenticatedUser(Principal principal) {
         if (principal == null) {
-            throw new IllegalArgumentException("User is not authenticated");
+            throw new org.springframework.security.access.AccessDeniedException("User is not authenticated");
         }
         return userAccountRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new IllegalArgumentException("Authenticated user not found"));
+                .orElseThrow(() -> new org.springframework.security.access.AccessDeniedException(
+                        "Authenticated user not found"));
+    }
+
+    private void checkIfOwnerOrStaff(Long userId, Principal principal) {
+        UserAccount currentUser = getAuthenticatedUser(principal);
+        boolean isStaffOrAdmin = "ADMIN".equals(currentUser.getRole())
+                || "OPERATIONAL_STAFF".equals(currentUser.getRole());
+        if (!userId.equals(currentUser.getUserId()) && !isStaffOrAdmin) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "You are not authorized to access this information");
+        }
     }
 
     @GetMapping
@@ -45,16 +56,22 @@ public class OrderRestController {
     @GetMapping("/{id}")
     @Operation(summary = "Get order by ID", description = "Retrieves details of a specific order by its unique identifier")
     public ResponseEntity<ApiResponse<OrderDTO>> getOrderById(
+            Principal principal,
             @Parameter(description = "ID of the order to retrieve", example = "101") @PathVariable Long id) {
         return orderService.getOrderDTOById(id)
-                .map(order -> ResponseEntity.ok(ApiResponse.success(order)))
+                .map(order -> {
+                    checkIfOwnerOrStaff(order.getUserId(), principal);
+                    return ResponseEntity.ok(ApiResponse.success(order));
+                })
                 .orElse(ResponseEntity.status(404).body(ApiResponse.error("Order not found")));
     }
 
     @GetMapping("/user/{userId}")
     @Operation(summary = "Get orders by User ID", description = "Retrieves a list of orders placed by a specific user")
     public ResponseEntity<ApiResponse<List<OrderDTO>>> getOrdersByUserId(
+            Principal principal,
             @Parameter(description = "ID of the user", example = "5") @PathVariable Long userId) {
+        checkIfOwnerOrStaff(userId, principal);
         List<OrderDTO> orders = orderService.getOrdersDTOByUserId(userId);
         return ResponseEntity.ok(ApiResponse.success(orders));
     }
