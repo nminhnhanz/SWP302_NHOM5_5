@@ -139,6 +139,7 @@ public class OrderService {
                     .variantSize(cartItem.getVariant() != null ? cartItem.getVariant().getFrameSize() : null)
                     .imageUrl(cartItem.getVariant() != null ? cartItem.getVariant().getImageUrl() : null)
                     .lensOption(cartItem.getLensOption())
+                    .lensOptionId(cartItem.getLensOption() != null ? cartItem.getLensOption().getLensOptionId() : null)
                     .lensType(cartItem.getLensOption() != null ? cartItem.getLensOption().getType() : null)
                     .lensPrice(lensPrice)
                     .lensCoating(cartItem.getLensOption() != null ? cartItem.getLensOption().getCoating() : null)
@@ -179,25 +180,7 @@ public class OrderService {
         return convertToDTO(savedOrder);
     }
 
-    public OrderDTO createOrder(OrderDTO dto) {
-        // Basic implementation for now - just saving the order entity
-        // Real implementation would handle items, addresses, etc.
-        Order order = Order.builder()
-                .status(dto.getStatus() != null ? dto.getStatus() : "PENDING")
-                .paymentStatus(dto.getPaymentStatus() != null ? dto.getPaymentStatus() : "UNPAID")
-                .totalPrice(dto.getTotalPrice())
-                .orderDate(LocalDateTime.now())
-                .build();
-
-        // Handle User
-        if (dto.getUserId() != null) {
-            order.setUser(com.fpt.glasseshop.entity.UserAccount.builder().userId(dto.getUserId()).build());
-        }
-
-        Order saved = orderRepository.save(order);
-        return convertToDTO(saved);
-    }
-
+    // Removed redundant createOrder method.
     public List<OrderItem> getOrderItems(Long orderId) {
         return orderItemService.getOrderItemsByOrderId(orderId);
     }
@@ -247,6 +230,7 @@ public class OrderService {
                 .lensType(item.getLensType())
                 .lensPrice(item.getLensPrice())
                 .lensCoating(item.getLensCoating())
+                .lensOptionId(item.getLensOptionId())
                 .quantity(item.getQuantity())
                 .unitPrice(item.getUnitPrice())
                 .subtotal(item.getUnitPrice().multiply(new java.math.BigDecimal(item.getQuantity())))

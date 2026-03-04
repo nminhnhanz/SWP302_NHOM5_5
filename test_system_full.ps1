@@ -1,4 +1,4 @@
-$baseUrl = "http://127.0.0.1:8082"
+$baseUrl = "http://127.0.0.1:8081"
 
 function Invoke-Login($user, $pass) {
     $loginUrl = "$baseUrl/login"

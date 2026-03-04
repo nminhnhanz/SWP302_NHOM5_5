@@ -76,13 +76,7 @@ public class OrderRestController {
         return ResponseEntity.ok(ApiResponse.success(orders));
     }
 
-    @PostMapping
-    @Operation(summary = "Create a new order", description = "Adds a new order to the system")
-    public ResponseEntity<ApiResponse<OrderDTO>> createOrder(@RequestBody OrderDTO orderDTO) {
-        OrderDTO created = orderService.createOrder(orderDTO);
-        return ResponseEntity.status(201).body(ApiResponse.success("Order created successfully", created));
-    }
-
+    // Users should use /checkout for order creation from cart
     @PostMapping("/checkout")
     @Operation(summary = "Checkout cart to create order", description = "Creates an order from the user's current shopping cart")
     public ResponseEntity<ApiResponse<OrderDTO>> checkout(

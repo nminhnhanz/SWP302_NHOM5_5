@@ -44,6 +44,9 @@ public class OrderItemDTO {
     @Schema(description = "Coating applied to the lens", example = "Anti-Reflective")
     private String lensCoating;
 
+    @Schema(description = "ID of the lens option", example = "3")
+    private Long lensOptionId;
+
     @Schema(description = "Quantity ordered", example = "1")
     private Integer quantity;
 

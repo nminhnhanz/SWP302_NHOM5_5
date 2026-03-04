@@ -62,6 +62,9 @@ public class OrderItem {
     @Column(name = "snapshot_lens_coating")
     private String lensCoating;
 
+    @Column(name = "snapshot_lens_option_id")
+    private Long lensOptionId;
+
     @OneToOne(mappedBy = "orderItem", cascade = CascadeType.ALL)
     private Prescription prescription;
 
