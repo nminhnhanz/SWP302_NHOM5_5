@@ -114,6 +114,16 @@ public class OrderService {
             OrderItem orderItem = OrderItem.builder()
                     .order(order)
                     .variant(cartItem.getVariant())
+                    .variantId(cartItem.getVariant() != null ? cartItem.getVariant().getVariantId() : null)
+                    .productId(cartItem.getVariant() != null && cartItem.getVariant().getProduct() != null
+                            ? cartItem.getVariant().getProduct().getProductId()
+                            : null)
+                    .productName(cartItem.getVariant() != null && cartItem.getVariant().getProduct() != null
+                            ? cartItem.getVariant().getProduct().getName()
+                            : null)
+                    .variantColor(cartItem.getVariant() != null ? cartItem.getVariant().getColor() : null)
+                    .variantSize(cartItem.getVariant() != null ? cartItem.getVariant().getFrameSize() : null)
+                    .imageUrl(cartItem.getVariant() != null ? cartItem.getVariant().getImageUrl() : null)
                     .lensOption(cartItem.getLensOption())
                     .quantity(cartItem.getQuantity())
                     .unitPrice(unitPrice)
@@ -193,10 +203,11 @@ public class OrderService {
             return null;
         return OrderItemDTO.builder()
                 .orderItemId(item.getOrderItemId())
-                .variantId(item.getVariant() != null ? item.getVariant().getVariantId() : null)
-                .productName(item.getVariant() != null && item.getVariant().getProduct() != null
-                        ? item.getVariant().getProduct().getName()
-                        : null)
+                .variantId(item.getVariantId())
+                .productName(item.getProductName())
+                .variantColor(item.getVariantColor())
+                .variantSize(item.getVariantSize())
+                .imageUrl(item.getImageUrl())
                 .quantity(item.getQuantity())
                 .unitPrice(item.getUnitPrice())
                 .subtotal(item.getUnitPrice().multiply(new java.math.BigDecimal(item.getQuantity())))
