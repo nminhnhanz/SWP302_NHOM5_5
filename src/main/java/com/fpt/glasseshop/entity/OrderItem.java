@@ -35,6 +35,16 @@ public class OrderItem {
     private BigDecimal unitPrice;
     private String fulfillmentType;
 
+    // Snapshot fields to preserve historical order data even if variant/product is
+    // modified or deleted
+    private Long variantId;
+    private Long productId;
+    private String productName;
+    private String variantColor;
+    private String variantSize;
+    @Column(columnDefinition = "TEXT")
+    private String imageUrl;
+
     @OneToOne(mappedBy = "orderItem", cascade = CascadeType.ALL)
     private Prescription prescription;
 
