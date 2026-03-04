@@ -34,11 +34,34 @@ public class SecurityConfig {
                         .requestMatchers("/", "/login/**", "/register/**").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico").permitAll()
 
-                        // temporary for testing api
-                        .requestMatchers("/api/**", "/v3/api-docs", "/v3/api-docs/**", "/swagger-ui/**",
-                                "/swagger-ui.html")
-                        .permitAll()
-                        .requestMatchers("/products/**").permitAll()
+                        // Swagger/OpenAPI docs
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                        // Public Product APIs
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/products/**").permitAll()
+
+                        // Admin Only: Full access to Products, Users, and Order deletion
+                        .requestMatchers("/api/users/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/products/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/products/**")
+                        .hasRole("ADMIN")
+
+                        // Staff & Admin: View all orders and update status
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/orders")
+                        .hasAnyRole("OPERATIONAL_STAFF", "ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/orders/**")
+                        .hasAnyRole("OPERATIONAL_STAFF", "ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.PATCH, "/api/orders/**")
+                        .hasAnyRole("OPERATIONAL_STAFF", "ADMIN")
+
+                        // Customer & Authenticated: Checkout, Cart, Own Orders
+                        .requestMatchers("/api/cart/**").authenticated()
+                        .requestMatchers("/api/orders/checkout").authenticated()
+                        .requestMatchers("/api/orders/user/**").authenticated()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/orders/{id}").authenticated()
+                        .requestMatchers("/api/payments/**").authenticated()
+
                         .requestMatchers("/operational-staff/**").hasAnyRole("OPERATIONAL_STAFF", "ADMIN")
                         .anyRequest().authenticated())
                 .formLogin(form -> form
