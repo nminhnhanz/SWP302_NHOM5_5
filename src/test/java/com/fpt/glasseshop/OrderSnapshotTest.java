@@ -1,0 +1,92 @@
+package com.fpt.glasseshop;
+
+import com.fpt.glasseshop.entity.*;
+import com.fpt.glasseshop.entity.dto.*;
+import com.fpt.glasseshop.service.*;
+import com.fpt.glasseshop.repository.*;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.Collections;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+class OrderSnapshotTest {
+
+    @Autowired
+    private OrderService orderService;
+
+    @Autowired
+    private UserAccountRepository userAccountRepository;
+
+    @Autowired
+    private ProductVariantRepository productVariantRepository;
+
+    @Autowired
+    private LensOptionRepository lensOptionRepository;
+
+    @Autowired
+    private CartService cartService;
+
+    @Test
+    @Transactional
+    void testOrderSnapshotLogic() {
+        // 1. Get a customer
+        UserAccount customer = userAccountRepository.findByEmail("john.doe@example.com")
+                .orElseGet(() -> userAccountRepository.save(UserAccount.builder()
+                        .name("John Doe").email("john.doe@example.com").role("CUSTOMER").build()));
+
+        // 2. Get a variant and lens
+        ProductVariant variant = productVariantRepository.findAll().get(0);
+        LensOption lens = lensOptionRepository.findAll().get(0);
+
+        // 3. Add to cart
+        AddToCartRequest addReq = AddToCartRequest.builder()
+                .variantId(variant.getVariantId())
+                .lensOptionId(lens.getLensOptionId())
+                .quantity(1)
+                .build();
+        cartService.addToCart(customer, addReq);
+
+        // 4. Checkout
+        CreateOrderRequest checkoutReq = CreateOrderRequest.builder()
+                .shippingAddressId(1L) // Assuming it exists from seeding
+                .billingAddressId(1L)
+                .paymentMethod("COD")
+                .items(Collections.singletonList(OrderItemRequest.builder()
+                        .variantId(variant.getVariantId())
+                        .lensOptionId(lens.getLensOptionId())
+                        .quantity(1)
+                        .prescription(PrescriptionDTO.builder()
+                                .sphLeft(new BigDecimal("-1.50"))
+                                .sphRight(new BigDecimal("-1.50"))
+                                .pd(new BigDecimal("63.0"))
+                                .doctorName("Dr. Quick")
+                                .build())
+                        .build()))
+                .build();
+
+        OrderDTO order = orderService.createOrderFromCart(customer, checkoutReq);
+
+        // 5. Verify Snapshots
+        assertNotNull(order);
+        assertEquals(1, order.getOrderItems().size());
+        OrderItemDTO item = order.getOrderItems().get(0);
+
+        System.out.println("Verifying snapshot for order: " + order.getOrderId());
+        System.out.println("  Product Name: " + item.getProductName());
+        System.out.println("  Lens Type: " + item.getLensType());
+        System.out.println("  Prescription Doctor: " + item.getPrescription().getDoctorName());
+
+        assertEquals(variant.getProduct().getName(), item.getProductName());
+        assertEquals(lens.getType(), item.getLensType());
+        assertEquals(lens.getPrice(), item.getLensPrice());
+        assertEquals("Dr. Quick", item.getPrescription().getDoctorName());
+
+        System.out.println("SNAPSHOT TEST PASSED!");
+    }
+}
