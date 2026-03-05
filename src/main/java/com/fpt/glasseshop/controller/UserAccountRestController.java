@@ -1,13 +1,16 @@
 package com.fpt.glasseshop.controller;
 
-import com.fpt.glasseshop.entity.dto.ApiResponse;
-import com.fpt.glasseshop.entity.dto.UserAccountDTO;
+import com.fpt.glasseshop.entity.dto.*;
 import com.fpt.glasseshop.service.UserAccountService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -53,5 +56,48 @@ public class UserAccountRestController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(ApiResponse.error(e.getMessage()));
         }
+    }
+    // Chỉ cần login là dùng được
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<UserResponseDTO>> me(
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        String email = userDetails.getUsername();
+        return ResponseEntity.ok(ApiResponse.success(userAccountService.getUser(email)));
+    }
+
+    @PutMapping("/profile")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<UserResponseDTO>> updateProfile(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody UpdateProfileRequest req
+    ) {
+        String email = userDetails.getUsername();
+        return ResponseEntity.ok(ApiResponse.success("Profile updated", userAccountService.updateMyProfile(email, req)));
+    }
+
+    @PutMapping("/email")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<UserResponseDTO>> updateEmail(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody UpdateEmailRequest req
+    ) {
+        String email = userDetails.getUsername();
+        UserResponseDTO updated = userAccountService.updateMyEmail(email, req);
+
+        // NOTE: Vì email là username, đổi email xong nên bắt user login lại để session update rõ ràng.
+        return ResponseEntity.ok(ApiResponse.success("Email updated. Please login again.", updated));
+    }
+
+    @PutMapping("/password")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody ChangePasswordRequest req
+    ) {
+        String email = userDetails.getUsername();
+        userAccountService.changeMyPassword(email, req);
+        return ResponseEntity.ok(ApiResponse.success("Password updated. Please login again.", null));
     }
 }

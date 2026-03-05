@@ -106,4 +106,12 @@ public class OrderRestController {
             return ResponseEntity.status(404).body(ApiResponse.error(e.getMessage()));
         }
     }
+
+//    @PatchMapping("/{id}/recompute-status")
+//    @PreAuthorize("hasAnyRole('OPERATIONAL_STAFF', 'ADMIN')")
+//    public ResponseEntity<ApiResponse<OrderDTO>> recompute(@PathVariable Long id) {
+//        // gọi service recompute rồi convertToDTO
+//        // Bạn có thể inject OrderWorkflowService vào OrderService để gọi.
+//        return ResponseEntity.status(501).body(ApiResponse.error("Not implemented yet"));
+//    }
 }
