@@ -1,0 +1,17 @@
+{
+    "shippingAddressId": 1,
+    "billingAddressId": 1,
+    "paymentMethod": "CREDIT_CARD",
+    "items": [
+        {
+            "variantId": 1,
+            "lensOptionId": 1,
+            "prescription": {
+                "sphLeft": -1.25,
+                "sphRight": -1.5,
+                "pd": 64.5,
+                "doctorName": "Dr. Test"
+            }
+        }
+    ]
+}

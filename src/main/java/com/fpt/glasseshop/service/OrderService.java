@@ -111,14 +111,60 @@ public class OrderService {
 
             totalPrice = totalPrice.add(subtotal);
 
+            // Find matching request item to get prescription if provided
+            PrescriptionDTO prescriptionDTO = null;
+            if (request.getItems() != null) {
+                prescriptionDTO = request.getItems().stream()
+                        .filter(ri -> ri.getVariantId().equals(cartItem.getVariant().getVariantId()) &&
+                                ((ri.getLensOptionId() == null && cartItem.getLensOption() == null) ||
+                                        (ri.getLensOptionId() != null && cartItem.getLensOption() != null
+                                                && ri.getLensOptionId()
+                                                        .equals(cartItem.getLensOption().getLensOptionId()))))
+                        .map(OrderItemRequest::getPrescription)
+                        .findFirst()
+                        .orElse(null);
+            }
+
             OrderItem orderItem = OrderItem.builder()
                     .order(order)
                     .variant(cartItem.getVariant())
+                    .variantId(cartItem.getVariant() != null ? cartItem.getVariant().getVariantId() : null)
+                    .productId(cartItem.getVariant() != null && cartItem.getVariant().getProduct() != null
+                            ? cartItem.getVariant().getProduct().getProductId()
+                            : null)
+                    .productName(cartItem.getVariant() != null && cartItem.getVariant().getProduct() != null
+                            ? cartItem.getVariant().getProduct().getName()
+                            : null)
+                    .variantColor(cartItem.getVariant() != null ? cartItem.getVariant().getColor() : null)
+                    .variantSize(cartItem.getVariant() != null ? cartItem.getVariant().getFrameSize() : null)
+                    .imageUrl(cartItem.getVariant() != null ? cartItem.getVariant().getImageUrl() : null)
                     .lensOption(cartItem.getLensOption())
+                    .lensOptionId(cartItem.getLensOption() != null ? cartItem.getLensOption().getLensOptionId() : null)
+                    .lensType(cartItem.getLensOption() != null ? cartItem.getLensOption().getType() : null)
+                    .lensPrice(lensPrice)
+                    .lensCoating(cartItem.getLensOption() != null ? cartItem.getLensOption().getCoating() : null)
                     .quantity(cartItem.getQuantity())
                     .unitPrice(unitPrice)
-                    .fulfillmentType("IN_STOCK") // Default
+                    .fulfillmentType(prescriptionDTO != null ? "PRESCRIPTION" : "IN_STOCK")
                     .build();
+
+            // Handle prescription if it exists
+            if (prescriptionDTO != null) {
+                Prescription p = Prescription.builder()
+                        .orderItem(orderItem)
+                        .sphLeft(prescriptionDTO.getSphLeft())
+                        .sphRight(prescriptionDTO.getSphRight())
+                        .cylLeft(prescriptionDTO.getCylLeft())
+                        .cylRight(prescriptionDTO.getCylRight())
+                        .axisLeft(prescriptionDTO.getAxisLeft())
+                        .axisRight(prescriptionDTO.getAxisRight())
+                        .pd(prescriptionDTO.getPd())
+                        .doctorName(prescriptionDTO.getDoctorName())
+                        .expirationDate(prescriptionDTO.getExpirationDate())
+                        .status("PENDING_VERIFICATION")
+                        .build();
+                orderItem.setPrescription(p);
+            }
 
             order.getOrderItems().add(orderItem);
         }
@@ -134,25 +180,7 @@ public class OrderService {
         return convertToDTO(savedOrder);
     }
 
-    public OrderDTO createOrder(OrderDTO dto) {
-        // Basic implementation for now - just saving the order entity
-        // Real implementation would handle items, addresses, etc.
-        Order order = Order.builder()
-                .status(dto.getStatus() != null ? dto.getStatus() : "PENDING")
-                .paymentStatus(dto.getPaymentStatus() != null ? dto.getPaymentStatus() : "UNPAID")
-                .totalPrice(dto.getTotalPrice())
-                .orderDate(LocalDateTime.now())
-                .build();
-
-        // Handle User
-        if (dto.getUserId() != null) {
-            order.setUser(com.fpt.glasseshop.entity.UserAccount.builder().userId(dto.getUserId()).build());
-        }
-
-        Order saved = orderRepository.save(order);
-        return convertToDTO(saved);
-    }
-
+    // Removed redundant createOrder method.
     public List<OrderItem> getOrderItems(Long orderId) {
         return orderItemService.getOrderItemsByOrderId(orderId);
     }
@@ -193,14 +221,42 @@ public class OrderService {
             return null;
         return OrderItemDTO.builder()
                 .orderItemId(item.getOrderItemId())
-                .variantId(item.getVariant() != null ? item.getVariant().getVariantId() : null)
-                .productName(item.getVariant() != null && item.getVariant().getProduct() != null
-                        ? item.getVariant().getProduct().getName()
-                        : null)
+                .variantId(item.getVariantId())
+                .productId(item.getProductId())
+                .productName(item.getProductName())
+                .variantColor(item.getVariantColor())
+                .variantSize(item.getVariantSize())
+                .imageUrl(item.getImageUrl())
+                .lensType(item.getLensType())
+                .lensPrice(item.getLensPrice())
+                .lensCoating(item.getLensCoating())
+                .lensOptionId(item.getLensOptionId())
                 .quantity(item.getQuantity())
                 .unitPrice(item.getUnitPrice())
                 .subtotal(item.getUnitPrice().multiply(new java.math.BigDecimal(item.getQuantity())))
                 .fulfillmentType(item.getFulfillmentType())
+                .itemType(item.getItemType())
+                .prescription(mapToPrescriptionDTO(item.getPrescription()))
+                .build();
+    }
+
+    private PrescriptionDTO mapToPrescriptionDTO(Prescription p) {
+        if (p == null)
+            return null;
+        return PrescriptionDTO.builder()
+                .prescriptionId(p.getPrescriptionId())
+                .orderItemId(p.getOrderItem().getOrderItemId())
+                .sphLeft(p.getSphLeft())
+                .sphRight(p.getSphRight())
+                .cylLeft(p.getCylLeft())
+                .cylRight(p.getCylRight())
+                .axisLeft(p.getAxisLeft())
+                .axisRight(p.getAxisRight())
+                .pd(p.getPd())
+                .doctorName(p.getDoctorName())
+                .expirationDate(p.getExpirationDate())
+                .status(p.getStatus())
+                .createdAt(p.getCreatedAt())
                 .build();
     }
 

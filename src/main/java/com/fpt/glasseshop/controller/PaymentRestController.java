@@ -22,9 +22,13 @@ public class PaymentRestController {
 
     @PostMapping("/process")
     @Operation(summary = "Process order payment", description = "Simulates payment processing and updates order status")
-    public ResponseEntity<ApiResponse<Payment>> processPayment(@Valid @RequestBody PaymentRequest request) {
+    public ResponseEntity<ApiResponse<Payment>> processPayment(
+            java.security.Principal principal,
+            @Valid @RequestBody PaymentRequest request) {
         try {
-            Payment payment = paymentService.processPayment(request);
+            // Ensure user can only pay for their own order
+            String userEmail = principal.getName();
+            Payment payment = paymentService.processPayment(request, userEmail);
             if ("SUCCESS".equals(payment.getStatus())) {
                 return ResponseEntity.ok(ApiResponse.success("Payment processed successfully", payment));
             } else {

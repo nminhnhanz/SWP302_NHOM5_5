@@ -35,6 +35,36 @@ public class OrderItem {
     private BigDecimal unitPrice;
     private String fulfillmentType;
 
+    @Column(name = "snapshot_variant_id")
+    private Long variantId;
+
+    @Column(name = "snapshot_product_id")
+    private Long productId;
+
+    @Column(name = "snapshot_product_name")
+    private String productName;
+
+    @Column(name = "snapshot_variant_color")
+    private String variantColor;
+
+    @Column(name = "snapshot_variant_size")
+    private String variantSize;
+
+    @Column(name = "snapshot_image_url", columnDefinition = "TEXT")
+    private String imageUrl;
+
+    @Column(name = "snapshot_lens_type")
+    private String lensType;
+
+    @Column(name = "snapshot_lens_price")
+    private BigDecimal lensPrice;
+
+    @Column(name = "snapshot_lens_coating")
+    private String lensCoating;
+
+    @Column(name = "snapshot_lens_option_id")
+    private Long lensOptionId;
+
     @OneToOne(mappedBy = "orderItem", cascade = CascadeType.ALL)
     private Prescription prescription;
 

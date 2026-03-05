@@ -21,9 +21,15 @@ public class PaymentService {
     private final OrderRepository orderRepository;
 
     @Transactional
-    public Payment processPayment(PaymentRequest request) {
+    public Payment processPayment(PaymentRequest request, String userEmail) {
         Order order = orderRepository.findById(request.getOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + request.getOrderId()));
+
+        // Verification: Current user must be the owner of the order
+        if (!order.getUser().getEmail().equals(userEmail)) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "You are not authorized to pay for this order");
+        }
 
         if ("PAID".equals(order.getPaymentStatus())) {
             throw new IllegalArgumentException("Order is already paid");

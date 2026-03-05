@@ -20,6 +20,9 @@ public class OrderItemDTO {
     @Schema(description = "ID of the product variant", example = "10")
     private Long variantId;
 
+    @Schema(description = "ID of the product", example = "5")
+    private Long productId;
+
     @Schema(description = "Name of the product", example = "Ray-Ban Aviator")
     private String productName;
 
@@ -31,6 +34,18 @@ public class OrderItemDTO {
 
     @Schema(description = "URL of the product image")
     private String imageUrl;
+
+    @Schema(description = "Type of lens selected", example = "Single Vision")
+    private String lensType;
+
+    @Schema(description = "Price of the lens at purchase", example = "30.00")
+    private BigDecimal lensPrice;
+
+    @Schema(description = "Coating applied to the lens", example = "Anti-Reflective")
+    private String lensCoating;
+
+    @Schema(description = "ID of the lens option", example = "3")
+    private Long lensOptionId;
 
     @Schema(description = "Quantity ordered", example = "1")
     private Integer quantity;
