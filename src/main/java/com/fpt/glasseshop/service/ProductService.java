@@ -129,6 +129,7 @@ public class ProductService {
                 .createdAt(product.getCreatedAt())
                 .variants(product.getVariants() != null
                         ? product.getVariants().stream()
+                        .filter(d -> Boolean.FALSE.equals(d.getDeleted()))//show only deleted = fasle
                                   .map(this::mapToVariantDTO)
                                 .collect(Collectors.toList())
                         : java.util.Collections.emptyList())
@@ -150,13 +151,14 @@ public class ProductService {
                 .imageUrl(variant.getImageUrl())
                 .status(variant.getStatus())
                 .active(variant.getActive())
+                .deleted(variant.getDeleted())
                 .build();
     }
     //for user
     private ProductDTO convertToDTOForUser(Product product) {
 
         List<ProductVariantDTO> variants = productVariantRepository
-                .findByProduct_ProductIdAndActiveTrue(product.getProductId())
+                .findByProduct_ProductIdAndActiveTrueAndDeletedFalse(product.getProductId())//show only active variant and deleted =false
                 .stream()
                 .map(this::mapToVariantDTO)
                 .collect(Collectors.toList());

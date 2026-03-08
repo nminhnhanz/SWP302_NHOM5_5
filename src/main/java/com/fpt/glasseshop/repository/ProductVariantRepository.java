@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Repository
@@ -24,4 +25,10 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
 
     List<ProductVariant> findByProduct_ProductIdAndActiveTrue(Long productId);
     List<ProductVariant> findByActiveTrue();
+
+    List<ProductVariant> findByDeletedFalse();
+
+    List<ProductVariant> findByProduct_ProductIdAndActiveTrueAndDeletedFalse(Long productId);
+
+;
 }

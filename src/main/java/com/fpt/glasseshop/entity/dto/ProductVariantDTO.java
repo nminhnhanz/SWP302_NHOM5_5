@@ -43,4 +43,7 @@ public class ProductVariantDTO {
 
     @Schema(description = "Hide or show variant for user (e.g., true, false)", example = "true")
     private Boolean active;
+
+    @Schema(description = "Soft delete status, if true = delete (e.g., true, false)", example = "false")
+    private Boolean deleted;
 }

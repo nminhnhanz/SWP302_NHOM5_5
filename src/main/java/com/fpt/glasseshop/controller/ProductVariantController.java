@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("admin/products/variants")
+@RequestMapping("admin/products")
 public class ProductVariantController {
 
     @Autowired
     private ProductVariantService productVariantService;
-    @PostMapping("/{productId}")
+    @PostMapping("/{productId}/variants")
     public ResponseEntity<ApiResponse<ProductVariantDTO>> createProVariant (@Valid @RequestBody VariantRequest proVariant, @PathVariable Long productId) throws BadRequestException {
 
         ProductVariantDTO createProVariant = productVariantService.createProductVariant(proVariant, productId);
@@ -27,7 +27,7 @@ public class ProductVariantController {
         return ResponseEntity.ok(ApiResponse.success("Product Variant created successfully", createProVariant));
     }
 
-    @PutMapping("/{variantId}")
+    @PutMapping("/variants/{variantId}")
     public ResponseEntity<ApiResponse<ProductVariantDTO>> updateProductVariant(
             @PathVariable Long variantId,
             @RequestBody VariantRequest request
@@ -38,7 +38,7 @@ public class ProductVariantController {
         return ResponseEntity.ok(ApiResponse.success("Product Variant updated successfully", variant));
     }
 
-    @PatchMapping("/{variantId}/status")
+    @PatchMapping("/variants/{variantId}/status")
     public ResponseEntity<ApiResponse<ProductVariantDTO>> updateVariantStatus(
             @PathVariable Long variantId,
             @RequestParam Boolean active
@@ -50,13 +50,13 @@ public class ProductVariantController {
         return ResponseEntity.ok(ApiResponse.success("Product Variant status updated successfully", updatedVariant));
     }
 
-    @GetMapping()
+    @GetMapping("/variants")
     public ResponseEntity<ApiResponse<List<ProductVariantDTO>>> getAllProductVariants(ProductVariant productVariant){
         List<ProductVariantDTO> listProVariant = productVariantService.findAllProductVariants();
         return ResponseEntity.ok(ApiResponse.success("Product Variant retrieved successfully", listProVariant));
     }
 
-    @DeleteMapping("/{variantId}")
+    @DeleteMapping("/variants/{variantId}")
     public ResponseEntity<ApiResponse<ProductVariant>> deleteProductVariant(@PathVariable Long variantId){
         productVariantService.deleteProductVariant(variantId);
         return ResponseEntity.ok(ApiResponse.success("Product Variant deleted successfully", null));

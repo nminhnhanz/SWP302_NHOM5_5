@@ -59,7 +59,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
     @Override
     public List<ProductVariantDTO> findAllProductVariants() {
-        return productVariantRepo.findAll()
+        return productVariantRepo.findByDeletedFalse()
                 .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
@@ -116,7 +116,8 @@ public class ProductVariantServiceImpl implements ProductVariantService {
     @Override
     public void deleteProductVariant(Long productVariantId) {
         ProductVariant variant = getProductVariantById(productVariantId);
-        variant.setDeleted(false);
+        variant.setDeleted(true);
+        variant.setActive(false);
         productVariantRepo.save(variant);
     }
     private ProductVariantDTO mapToDTO(ProductVariant variant) {
