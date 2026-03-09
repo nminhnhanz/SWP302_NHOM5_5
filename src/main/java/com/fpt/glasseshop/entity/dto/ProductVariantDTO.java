@@ -40,4 +40,10 @@ public class ProductVariantDTO {
 
     @Schema(description = "Current status of the variant (e.g., AVAILABLE, OUT_OF_STOCK)", example = "AVAILABLE")
     private String status;
+
+    @Schema(description = "Hide or show variant for user (e.g., true, false)", example = "true")
+    private Boolean active;
+
+    @Schema(description = "Soft delete status, if true = delete (e.g., true, false)", example = "false")
+    private Boolean deleted;
 }

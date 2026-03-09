@@ -33,4 +33,6 @@ public class ProductVariant {
     private String imageUrl;
 
     private String status;
+    private Boolean active;
+    private Boolean deleted;
 }

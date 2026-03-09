@@ -26,7 +26,7 @@ public class ProductRestController {
         private final ProductService productService;
 
         // ================= GET ALL PRODUCTS =================
-        @GetMapping
+        @GetMapping("/admin")
         @Operation(summary = "Get all products", description = "Retrieves a list of all available products")
         public ResponseEntity<ApiResponse<List<ProductDTO>>> getAllProducts() {
 
@@ -34,6 +34,16 @@ public class ProductRestController {
 
                 return ResponseEntity.ok(
                                 ApiResponse.success("Products retrieved successfully", products));
+        }
+
+        @GetMapping
+        @Operation(summary = "Get all products", description = "Retrieves a list of all available products")
+        public ResponseEntity<ApiResponse<List<ProductDTO>>> getAllProductsForUser() {
+
+            List<ProductDTO> products = productService.getAllProductsForUser();
+
+            return ResponseEntity.ok(
+                    ApiResponse.success("Products retrieved successfully", products));
         }
 
         // ================= GET PRODUCT BY ID =================
