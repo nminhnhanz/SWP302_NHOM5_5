@@ -3,6 +3,7 @@ package com.fpt.glasseshop.controller;
 import com.fpt.glasseshop.entity.UserAccount;
 import com.fpt.glasseshop.entity.dto.AddToCartRequest;
 import com.fpt.glasseshop.entity.dto.CartDTO;
+import com.fpt.glasseshop.entity.dto.CartItemDTO;
 import com.fpt.glasseshop.repository.UserAccountRepository;
 import com.fpt.glasseshop.service.CartService;
 import jakarta.validation.Valid;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/cart")
@@ -37,6 +39,11 @@ public class CartRestController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<CartItemDTO>> getCartItemsByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(cartService.getCartItemsByUserId(userId));
     }
 
     @PostMapping("/add")
