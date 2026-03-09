@@ -38,6 +38,13 @@ public class CartService {
         return convertToDTO(cart);
     }
 
+    @Transactional(readOnly = true)
+    public List<CartItemDTO> getCartItemsByUserId(Long userId) {
+        return cartRepository.findByUserUserId(userId)
+                .map(cart -> convertToDTO(cart).getItems())
+                .orElse(new ArrayList<>());
+    }
+
     @Transactional
     public CartDTO addToCart(UserAccount user, AddToCartRequest request) {
         Cart cart = getOrCreateCart(user);
