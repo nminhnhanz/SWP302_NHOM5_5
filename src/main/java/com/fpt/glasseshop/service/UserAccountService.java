@@ -18,7 +18,7 @@ public class UserAccountService {
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
     public boolean checkEmailExists(String email) {
         System.out.println("Checking email: " + email);
-        boolean exists = userAccountRepository.existsByEmail(email);
+        boolean exists = userAccountRepository.existsByEmailIgnoreCase(email);
         System.out.println("Exists? " + exists);
         return exists;
     }

@@ -20,7 +20,7 @@ public class UserAccountRestController {
 
     private final UserAccountService userAccountService;
 
-    @GetMapping
+    @GetMapping("getAllUsers")
     @Operation(summary = "Get all users", description = "Retrieves a list of all user accounts (Admin only)")
     public ResponseEntity<ApiResponse<List<UserAccountDTO>>> getAllUsers() {
         List<UserAccountDTO> users = userAccountService.getAllUsersDTO();
@@ -35,20 +35,27 @@ public class UserAccountRestController {
                 .map(user -> ResponseEntity.ok(ApiResponse.success(user)))
                 .orElse(ResponseEntity.status(404).body(ApiResponse.error("User not found")));
     }
-    @GetMapping("/check-email")
-    @Operation(summary = "Check if email exists", description = "Return true or false")
+    @PostMapping("/check-email")
+    @Operation(summary = "Check email", description = "Return true / false")
     public ResponseEntity<ApiResponse<Boolean>> checkEmail(@RequestParam String email) {
-        return ResponseEntity.ok(ApiResponse.success(
-                userAccountService.checkEmailExists(email)));
+        System.out.println("Email received: " + email); // Debug
+        boolean exists = userAccountService.checkEmailExists(email);
+        System.out.println("Exists: " + exists); // Debug
+        return ResponseEntity.ok(ApiResponse.success(exists));
     }
 
-    @PostMapping
+    @PostMapping("/create")
     @Operation(summary = "Create a new user", description = "Adds a new user account to the system")
     public ResponseEntity<ApiResponse<UserAccountDTO>> createUser(@RequestBody UserAccountDTO userDTO) {
         UserAccountDTO created = userAccountService.createUser(userDTO);
         return ResponseEntity.status(201).body(ApiResponse.success("User created successfully", created));
     }
 
+    @PostMapping("/authencation")
+    @Operation(summary = "Authentication using email and password")
+    public boolean authenticate(@RequestParam String email, @RequestParam String password) {
+        return userAccountService.authenticate(email,password);
+    }
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a user", description = "Removes a user account from the system")
     public ResponseEntity<ApiResponse<Void>> deleteUser(
