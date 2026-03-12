@@ -16,7 +16,12 @@ public class UserAccountService {
 
     private final UserAccountRepository userAccountRepository;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
-
+    public boolean checkEmailExists(String email) {
+        System.out.println("Checking email: " + email);
+        boolean exists = userAccountRepository.existsByEmail(email);
+        System.out.println("Exists? " + exists);
+        return exists;
+    }
     public List<UserAccountDTO> getAllUsersDTO() {
         return userAccountRepository.findAll().stream()
                 .map(this::convertToDTO)
@@ -46,12 +51,6 @@ public class UserAccountService {
         }
         userAccountRepository.deleteById(id);
     }
-    public boolean checkEmailExists(String email) {
-        if (!userAccountRepository.existsByEmail(email)) {
-            return false;
-        }
-        return true;
-    }
     public boolean authenticate(String email, String password) {
         Optional<UserAccount> user = userAccountRepository.findByEmail(email);
         if (user.isPresent() && passwordEncoder.matches(password, user.get().getPasswordHash())) {
@@ -65,6 +64,7 @@ public class UserAccountService {
                 .name(user.getName())
                 .email(user.getEmail())
                 .phone(user.getPhone())
+                .password(user.getPasswordHash())
                 .role(user.getRole())
                 .accountStatus(user.getAccountStatus())
                 .createdAt(user.getCreatedAt())

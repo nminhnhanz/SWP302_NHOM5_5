@@ -38,7 +38,8 @@ public class UserAccountRestController {
     @GetMapping("/check-email")
     @Operation(summary = "Check if email exists", description = "Return true or false")
     public ResponseEntity<ApiResponse<Boolean>> checkEmail(@RequestParam String email) {
-        return ResponseEntity.ok(ApiResponse.success(userAccountService.checkEmailExists(email)));
+        return ResponseEntity.ok(ApiResponse.success(
+                userAccountService.checkEmailExists(email)));
     }
 
     @PostMapping
