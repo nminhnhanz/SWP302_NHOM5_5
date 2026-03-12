@@ -22,10 +22,18 @@ public class ProductService {
     private final OrderItemRepository orderItemRepository;
 
     // ✅ GET ALL
+    //admin
     public List<ProductDTO> getAllProducts() {
         return productRepository.findAll()
                 .stream()
                 .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<ProductDTO> getAllProductsForUser() {
+        return productRepository.findAll()
+                .stream()
+                .map(this::convertToDTOForUser)
                 .collect(Collectors.toList());
     }
 
@@ -109,7 +117,7 @@ public class ProductService {
     }
 
     // ================== MAPPING ==================
-
+    //for admin
     private ProductDTO convertToDTO(Product product) {
         return ProductDTO.builder()
                 .productId(product.getProductId())
@@ -121,7 +129,8 @@ public class ProductService {
                 .createdAt(product.getCreatedAt())
                 .variants(product.getVariants() != null
                         ? product.getVariants().stream()
-                                .map(this::mapToVariantDTO)
+                        .filter(d -> Boolean.FALSE.equals(d.getDeleted()))//show only deleted = fasle
+                                  .map(this::mapToVariantDTO)
                                 .collect(Collectors.toList())
                         : java.util.Collections.emptyList())
                 .build();
@@ -141,6 +150,29 @@ public class ProductService {
                 .material(variant.getMaterial())
                 .imageUrl(variant.getImageUrl())
                 .status(variant.getStatus())
+                .active(variant.getActive())
+                .deleted(variant.getDeleted())
                 .build();
     }
+    //for user
+    private ProductDTO convertToDTOForUser(Product product) {
+
+        List<ProductVariantDTO> variants = productVariantRepository
+                .findByProduct_ProductIdAndActiveTrueAndDeletedFalse(product.getProductId())//show only active variant and deleted =false
+                .stream()
+                .map(this::mapToVariantDTO)
+                .collect(Collectors.toList());
+
+        return ProductDTO.builder()
+                .productId(product.getProductId())
+                .productType(product.getProductType())
+                .name(product.getName())
+                .brand(product.getBrand())
+                .description(product.getDescription())
+                .isPrescriptionSupported(product.isPrescriptionSupported())
+                .createdAt(product.getCreatedAt())
+                .variants(variants)
+                .build();
+    }
+
 }

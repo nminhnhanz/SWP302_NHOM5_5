@@ -105,6 +105,8 @@ public class DataInitialize implements CommandLineRunner {
                                 .material("Metal")
                                 .imageUrl("https://example.com/aviator-gold.jpg")
                                 .status("AVAILABLE")
+                                .active(true)
+                                .deleted(false)
                                 .build();
 
                 ProductVariant aviatorBlack = ProductVariant.builder()
@@ -116,6 +118,8 @@ public class DataInitialize implements CommandLineRunner {
                                 .material("Metal")
                                 .imageUrl("https://example.com/aviator-black.jpg")
                                 .status("AVAILABLE")
+                                .active(true)
+                                .deleted(false)
                                 .build();
 
                 productVariantRepository.saveAll(Arrays.asList(aviatorGold, aviatorBlack));
@@ -139,6 +143,8 @@ public class DataInitialize implements CommandLineRunner {
                                 .material("Plastic")
                                 .imageUrl("https://example.com/reader-blue.jpg")
                                 .status("AVAILABLE")
+                                .active(true)
+                                .deleted(false)
                                 .build();
                 productVariantRepository.save(readerBlue);
 
@@ -160,6 +166,8 @@ public class DataInitialize implements CommandLineRunner {
                                 .material("Liquid/Cloth")
                                 .imageUrl("https://example.com/cleaning-kit.jpg")
                                 .status("AVAILABLE")
+                                .active(true)
+                                .deleted(false)
                                 .build();
                 productVariantRepository.save(kitStandard);
 
