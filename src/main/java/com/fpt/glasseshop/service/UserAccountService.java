@@ -44,7 +44,9 @@ public class UserAccountService {
         UserAccount saved = userAccountRepository.save(user);
         return convertToDTO(saved);
     }
-
+    public Long getUserIdByEmail(String email) {
+        return userAccountRepository.findByEmail(email).map(UserAccount::getUserId).orElse(null);
+    }
     public void deleteUser(Long id) {
         if (!userAccountRepository.existsById(id)) {
             throw new RuntimeException("User not found with id: " + id);

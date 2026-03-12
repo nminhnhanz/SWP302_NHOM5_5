@@ -1,5 +1,6 @@
 package com.fpt.glasseshop.controller;
 
+import com.fpt.glasseshop.entity.AuthData;
 import com.fpt.glasseshop.entity.dto.ApiResponse;
 import com.fpt.glasseshop.entity.dto.UserAccountDTO;
 import com.fpt.glasseshop.service.UserAccountService;
@@ -53,8 +54,12 @@ public class UserAccountRestController {
 
     @PostMapping("/authencation")
     @Operation(summary = "Authentication using email and password")
-    public boolean authenticate(@RequestParam String email, @RequestParam String password) {
-        return userAccountService.authenticate(email,password);
+    public AuthData authenticate(@RequestParam String email, @RequestParam String password) {
+        AuthData authData = new AuthData();
+
+        authData.setStatus(userAccountService.authenticate(email,password));
+            if (authData.getStatus())authData.setUserId(userAccountService.getUserIdByEmail(email));
+            return authData;
     }
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a user", description = "Removes a user account from the system")
