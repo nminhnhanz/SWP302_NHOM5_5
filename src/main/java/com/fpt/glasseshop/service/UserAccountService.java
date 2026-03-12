@@ -46,7 +46,19 @@ public class UserAccountService {
         }
         userAccountRepository.deleteById(id);
     }
-
+    public boolean checkEmailExists(String email) {
+        if (!userAccountRepository.existsByEmail(email)) {
+            return false;
+        }
+        return true;
+    }
+    public boolean authenticate(String email, String password) {
+        Optional<UserAccount> user = userAccountRepository.findByEmail(email);
+        if (user.isPresent() && passwordEncoder.matches(password, user.get().getPasswordHash())) {
+            return true;
+        }
+        return false;
+    }
     private UserAccountDTO convertToDTO(UserAccount user) {
         return UserAccountDTO.builder()
                 .userId(user.getUserId())

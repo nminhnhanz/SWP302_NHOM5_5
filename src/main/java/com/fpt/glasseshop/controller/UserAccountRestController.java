@@ -35,6 +35,11 @@ public class UserAccountRestController {
                 .map(user -> ResponseEntity.ok(ApiResponse.success(user)))
                 .orElse(ResponseEntity.status(404).body(ApiResponse.error("User not found")));
     }
+    @GetMapping("/check-email")
+    @Operation(summary = "Check if email exists", description = "Return true or false")
+    public ResponseEntity<ApiResponse<Boolean>> checkEmail(@RequestParam String email) {
+        return ResponseEntity.ok(ApiResponse.success(userAccountService.checkEmailExists(email)));
+    }
 
     @PostMapping
     @Operation(summary = "Create a new user", description = "Adds a new user account to the system")
