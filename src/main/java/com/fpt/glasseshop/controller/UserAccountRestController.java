@@ -2,11 +2,13 @@ package com.fpt.glasseshop.controller;
 
 import com.fpt.glasseshop.entity.dto.ApiResponse;
 import com.fpt.glasseshop.entity.dto.UserAccountDTO;
+import com.fpt.glasseshop.entity.dto.request.UpdateProfileRequest;
 import com.fpt.glasseshop.service.UserAccountService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -53,5 +55,16 @@ public class UserAccountRestController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(ApiResponse.error(e.getMessage()));
         }
+    }
+
+    @PatchMapping("/profile")
+    public ResponseEntity<ApiResponse<UserAccountDTO>> updateMyProfile(
+            @RequestBody UpdateProfileRequest request) throws BadRequestException {
+
+        UserAccountDTO updated = userAccountService.updateMyProfile(request);
+
+        return ResponseEntity.ok(
+                ApiResponse.success("User profile updated successfully", updated)
+        );
     }
 }
