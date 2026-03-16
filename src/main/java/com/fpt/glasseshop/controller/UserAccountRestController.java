@@ -75,14 +75,14 @@ public class UserAccountRestController {
         }
     }
 
-    /*@PatchMapping("/profile")
+    @PatchMapping("/profile")
     public ResponseEntity<ApiResponse<UserAccountDTO>> updateMyProfile(
             @RequestBody UpdateProfileRequest request) throws BadRequestException {
 
-        UserAccountDTO updated = userAccountService.updateMyProfile(request);
+        UserAccountDTO updated = userAccountService.updateUserProfile(request);
 
         return ResponseEntity.ok(
                 ApiResponse.success("User profile updated successfully", updated)
         );
-    }*/
+    }
 }

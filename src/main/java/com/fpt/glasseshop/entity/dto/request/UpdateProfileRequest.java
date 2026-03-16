@@ -5,12 +5,14 @@ import lombok.Data;
 
 @Data
 public class UpdateProfileRequest {
+
     private String name;
 
     private String phone;
 
     @Email(message = "Invalid email format")
     private String email;
+
 
     private String currentPassword;
     private String newPassword;
