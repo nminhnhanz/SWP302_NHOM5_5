@@ -1,4 +1,4 @@
-package com.fpt.glasseshop.entity.dto.request;
+package com.fpt.glasseshop.entity.dto;
 
 import jakarta.validation.constraints.Email;
 import lombok.Data;

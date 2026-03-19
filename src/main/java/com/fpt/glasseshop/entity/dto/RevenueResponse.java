@@ -1,4 +1,4 @@
-package com.fpt.glasseshop.entity.dto.response;
+package com.fpt.glasseshop.entity.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

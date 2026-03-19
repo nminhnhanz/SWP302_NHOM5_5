@@ -2,7 +2,7 @@ package com.fpt.glasseshop.service;
 
 import com.fpt.glasseshop.entity.UserAccount;
 import com.fpt.glasseshop.entity.dto.UserAccountDTO;
-import com.fpt.glasseshop.entity.dto.request.UpdateProfileRequest;
+import com.fpt.glasseshop.entity.dto.UpdateProfileRequest;
 import com.fpt.glasseshop.exception.ResourceNotFoundException;
 import com.fpt.glasseshop.repository.UserAccountRepository;
 import lombok.RequiredArgsConstructor;

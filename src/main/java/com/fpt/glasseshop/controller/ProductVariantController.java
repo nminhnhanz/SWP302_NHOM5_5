@@ -3,7 +3,7 @@ package com.fpt.glasseshop.controller;
 import com.fpt.glasseshop.entity.ProductVariant;
 import com.fpt.glasseshop.entity.dto.ApiResponse;
 import com.fpt.glasseshop.entity.dto.ProductVariantDTO;
-import com.fpt.glasseshop.entity.dto.request.VariantRequest;
+import com.fpt.glasseshop.entity.dto.VariantRequest;
 import com.fpt.glasseshop.service.ProductVariantService;
 import jakarta.validation.Valid;
 import org.apache.coyote.BadRequestException;

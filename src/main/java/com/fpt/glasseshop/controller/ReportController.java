@@ -1,7 +1,7 @@
 package com.fpt.glasseshop.controller;
 
 import com.fpt.glasseshop.entity.dto.ApiResponse;
-import com.fpt.glasseshop.entity.dto.response.RevenueResponse;
+import com.fpt.glasseshop.entity.dto.RevenueResponse;
 import com.fpt.glasseshop.service.ReportService;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping ("/admin/reports")

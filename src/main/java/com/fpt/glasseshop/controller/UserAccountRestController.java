@@ -3,7 +3,7 @@ package com.fpt.glasseshop.controller;
 import com.fpt.glasseshop.entity.AuthData;
 import com.fpt.glasseshop.entity.dto.ApiResponse;
 import com.fpt.glasseshop.entity.dto.UserAccountDTO;
-import com.fpt.glasseshop.entity.dto.request.UpdateProfileRequest;
+import com.fpt.glasseshop.entity.dto.UpdateProfileRequest;
 import com.fpt.glasseshop.service.UserAccountService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
