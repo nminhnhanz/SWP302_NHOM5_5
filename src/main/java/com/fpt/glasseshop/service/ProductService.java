@@ -89,6 +89,8 @@ public class ProductService {
                             .material(vDto.getMaterial())
                             .imageUrl(vDto.getImageUrl())
                             .status(vDto.getStatus() != null ? vDto.getStatus() : "AVAILABLE")
+                            .active(vDto.getActive() != null ? vDto.getActive() : true)
+                            .deleted(vDto.getDeleted() != null ? vDto.getDeleted() : false)
                             .build())
                     .collect(Collectors.toList());
             productVariantRepository.saveAll(variants);
@@ -129,7 +131,7 @@ public class ProductService {
                 .createdAt(product.getCreatedAt())
                 .variants(product.getVariants() != null
                         ? product.getVariants().stream()
-                        .filter(d -> Boolean.FALSE.equals(d.getDeleted()))//show only deleted = fasle
+                        .filter(d -> !Boolean.TRUE.equals(d.getDeleted()))//show only deleted = fasle
                                   .map(this::mapToVariantDTO)
                                 .collect(Collectors.toList())
                         : java.util.Collections.emptyList())

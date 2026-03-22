@@ -40,4 +40,5 @@ public class ProductDTO {
 
     @Schema(description = "List of variants for this product")
     private List<ProductVariantDTO> variants;
+
 }
