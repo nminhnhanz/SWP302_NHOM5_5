@@ -151,7 +151,7 @@ public class CartService {
         List<CartItemDTO> itemDTOs = new ArrayList<>();
         if (cart.getItems() != null) {
             for (CartItem item : cart.getItems()) {
-                BigDecimal variantPrice = item.getVariant().getPrice() != null ? item.getVariant().getPrice()
+                BigDecimal variantPrice = (item.getVariant().getProduct() != null && item.getVariant().getProduct().getPrice() != null) ? item.getVariant().getProduct().getPrice()
                         : BigDecimal.ZERO;
                 BigDecimal lensPrice = (item.getLensOption() != null && item.getLensOption().getPrice() != null)
                         ? item.getLensOption().getPrice()

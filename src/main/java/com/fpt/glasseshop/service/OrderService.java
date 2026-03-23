@@ -101,7 +101,7 @@ public class OrderService {
 
         // 4. Create OrderItems from CartItems and Calculate Total
         for (CartItem cartItem : cart.getItems()) {
-            BigDecimal variantPrice = cartItem.getVariant().getPrice() != null ? cartItem.getVariant().getPrice()
+            BigDecimal variantPrice = (cartItem.getVariant().getProduct() != null && cartItem.getVariant().getProduct().getPrice() != null) ? cartItem.getVariant().getProduct().getPrice()
                     : BigDecimal.ZERO;
             BigDecimal lensPrice = (cartItem.getLensOption() != null && cartItem.getLensOption().getPrice() != null)
                     ? cartItem.getLensOption().getPrice()

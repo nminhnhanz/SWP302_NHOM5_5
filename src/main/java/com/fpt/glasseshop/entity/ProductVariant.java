@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 
 @Entity
 @Data
@@ -23,7 +22,6 @@ public class ProductVariant {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    private BigDecimal price;
     private Integer stockQuantity;
     private String frameSize;
     private String color;
@@ -33,6 +31,10 @@ public class ProductVariant {
     private String imageUrl;
 
     private String status;
-    private Boolean active;
-    private Boolean deleted;
+
+    @Builder.Default
+    private Boolean active = true;
+    
+    @Builder.Default
+    private Boolean deleted = false;
 }

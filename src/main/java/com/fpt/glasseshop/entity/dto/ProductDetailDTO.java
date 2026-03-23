@@ -20,6 +20,7 @@ public class ProductDetailDTO {
     private String brand;
     private String description;
     private boolean isPrescriptionSupported;
+    private java.math.BigDecimal price;
     private LocalDateTime createdAt;
     private List<ProductVariantDTO> variants;
     private List<ReviewDTO> reviews;

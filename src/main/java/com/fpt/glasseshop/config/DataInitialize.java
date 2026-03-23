@@ -98,7 +98,6 @@ public class DataInitialize implements CommandLineRunner {
 
                 ProductVariant aviatorGold = ProductVariant.builder()
                                 .product(aviator)
-                                .price(new BigDecimal("150.00"))
                                 .stockQuantity(100)
                                 .frameSize("Medium")
                                 .color("Gold")
@@ -111,7 +110,6 @@ public class DataInitialize implements CommandLineRunner {
 
                 ProductVariant aviatorBlack = ProductVariant.builder()
                                 .product(aviator)
-                                .price(new BigDecimal("145.00"))
                                 .stockQuantity(50)
                                 .frameSize("Large")
                                 .color("Black")
@@ -136,7 +134,6 @@ public class DataInitialize implements CommandLineRunner {
 
                 ProductVariant readerBlue = ProductVariant.builder()
                                 .product(readingGlasses)
-                                .price(new BigDecimal("25.00"))
                                 .stockQuantity(200)
                                 .frameSize("Small")
                                 .color("Blue")
@@ -160,7 +157,6 @@ public class DataInitialize implements CommandLineRunner {
 
                 ProductVariant kitStandard = ProductVariant.builder()
                                 .product(cleaningKit)
-                                .price(new BigDecimal("10.00"))
                                 .stockQuantity(500)
                                 .color("N/A")
                                 .material("Liquid/Cloth")
