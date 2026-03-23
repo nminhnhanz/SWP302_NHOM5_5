@@ -1,12 +1,15 @@
 package com.fpt.glasseshop.controller;
 
+import com.fpt.glasseshop.entity.AuthData;
 import com.fpt.glasseshop.entity.dto.ApiResponse;
 import com.fpt.glasseshop.entity.dto.UserAccountDTO;
+import com.fpt.glasseshop.entity.dto.request.UpdateProfileRequest;
 import com.fpt.glasseshop.service.UserAccountService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +23,7 @@ public class UserAccountRestController {
 
     private final UserAccountService userAccountService;
 
-    @GetMapping
+    @GetMapping("getAllUsers")
     @Operation(summary = "Get all users", description = "Retrieves a list of all user accounts (Admin only)")
     public ResponseEntity<ApiResponse<List<UserAccountDTO>>> getAllUsers() {
         List<UserAccountDTO> users = userAccountService.getAllUsersDTO();
@@ -35,14 +38,31 @@ public class UserAccountRestController {
                 .map(user -> ResponseEntity.ok(ApiResponse.success(user)))
                 .orElse(ResponseEntity.status(404).body(ApiResponse.error("User not found")));
     }
+    @PostMapping("/check-email")
+    @Operation(summary = "Check email", description = "Return true / false")
+    public ResponseEntity<ApiResponse<Boolean>> checkEmail(@RequestParam String email) {
+        System.out.println("Email received: " + email); // Debug
+        boolean exists = userAccountService.checkEmailExists(email);
+        System.out.println("Exists: " + exists); // Debug
+        return ResponseEntity.ok(ApiResponse.success(exists));
+    }
 
-    @PostMapping
+    @PostMapping("/create")
     @Operation(summary = "Create a new user", description = "Adds a new user account to the system")
     public ResponseEntity<ApiResponse<UserAccountDTO>> createUser(@RequestBody UserAccountDTO userDTO) {
         UserAccountDTO created = userAccountService.createUser(userDTO);
         return ResponseEntity.status(201).body(ApiResponse.success("User created successfully", created));
     }
 
+    @PostMapping("/authencation")
+    @Operation(summary = "Authentication using email and password")
+    public AuthData authenticate(@RequestParam String email, @RequestParam String password) {
+        AuthData authData = new AuthData();
+
+        authData.setStatus(userAccountService.authenticate(email,password));
+            if (authData.getStatus())authData.setUserId(userAccountService.getUserIdByEmail(email));
+            return authData;
+    }
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a user", description = "Removes a user account from the system")
     public ResponseEntity<ApiResponse<Void>> deleteUser(
@@ -53,5 +73,16 @@ public class UserAccountRestController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(ApiResponse.error(e.getMessage()));
         }
+    }
+
+    @PatchMapping("/profile")
+    public ResponseEntity<ApiResponse<UserAccountDTO>> updateMyProfile(
+            @RequestBody UpdateProfileRequest request) throws BadRequestException {
+
+        UserAccountDTO updated = userAccountService.updateUserProfile(request);
+
+        return ResponseEntity.ok(
+                ApiResponse.success("User profile updated successfully", updated)
+        );
     }
 }
