@@ -37,4 +37,12 @@ public class ReturnRequest {
     public enum ReturnStatus {
         PENDING, APPROVED, REJECTED, COMPLETED
     }
+    // Mô tả chi tiết
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    // Ảnh minh chứng
+    @Column(columnDefinition = "TEXT")
+    private String imageUrl;
+
 }
