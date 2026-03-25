@@ -38,6 +38,13 @@ public class CartService {
         return convertToDTO(cart);
     }
 
+    @Transactional(readOnly = true)
+    public List<CartItemDTO> getCartItemsByUserId(Long userId) {
+        return cartRepository.findByUserUserId(userId)
+                .map(cart -> convertToDTO(cart).getItems())
+                .orElse(new ArrayList<>());
+    }
+
     @Transactional
     public CartDTO addToCart(UserAccount user, AddToCartRequest request) {
         Cart cart = getOrCreateCart(user);
@@ -53,27 +60,50 @@ public class CartService {
                             "Lens Option not found with id: " + request.getLensOptionId()));
         }
 
-        // Check if item already exists in cart with same variant and same lens option
-        final Long lensId = lensOption != null ? lensOption.getLensOptionId() : null;
-
+        // Check if item already exists in cart with same variant
         Optional<CartItem> existingItemOpt = cart.getItems().stream()
-                .filter(item -> item.getVariant().getVariantId().equals(variant.getVariantId()) &&
-                        ((item.getLensOption() == null && lensId == null) ||
-                                (item.getLensOption() != null
-                                        && item.getLensOption().getLensOptionId().equals(lensId))))
+                .filter(item -> item.getVariant().getVariantId().equals(variant.getVariantId()))
                 .findFirst();
 
         if (existingItemOpt.isPresent()) {
             CartItem existingItem = existingItemOpt.get();
             existingItem.setQuantity(existingItem.getQuantity() + request.getQuantity());
+            if (request.getIsLens() != null) existingItem.setIsLens(request.getIsLens());
+            if (request.getIsPreorder() != null) existingItem.setIsPreorder(request.getIsPreorder());
+            if (lensOption != null) existingItem.setLensOption(lensOption);
             cartItemRepository.save(existingItem);
         } else {
+            java.math.BigDecimal variantPriceVal = variant.getProduct() != null && variant.getProduct().getPrice() != null ? variant.getProduct().getPrice() : java.math.BigDecimal.ZERO;
+            java.math.BigDecimal lensPriceVal = lensOption != null && lensOption.getPrice() != null ? lensOption.getPrice() : java.math.BigDecimal.ZERO;
+            java.math.BigDecimal price = variantPriceVal.add(lensPriceVal);
+            
             CartItem newItem = CartItem.builder()
                     .cart(cart)
                     .variant(variant)
                     .lensOption(lensOption)
                     .quantity(request.getQuantity())
+                    .productId(variant.getProduct() != null ? variant.getProduct().getProductId() : null)
+                    .productName(variant.getProduct() != null ? variant.getProduct().getName() : null)
+                    .price(price)
+                    .isLens(request.getIsLens() != null ? request.getIsLens() : false)
+                    .isPreorder(request.getIsPreorder() != null ? request.getIsPreorder() : false)
                     .build();
+
+            if (Boolean.TRUE.equals(request.getIsLens())) {
+                com.fpt.glasseshop.entity.Prescription prescription = com.fpt.glasseshop.entity.Prescription.builder()
+                        .sphLeft(request.getSphLeft())
+                        .sphRight(request.getSphRight())
+                        .cylLeft(request.getCylLeft())
+                        .cylRight(request.getCylRight())
+                        .axisLeft(request.getAxisLeft())
+                        .axisRight(request.getAxisRight())
+                        .pd(request.getPd())
+                        .status(false) // false = pending
+                        .cartItem(newItem) // linking to cartItem
+                        .build();
+                newItem.setPrescription(prescription);
+            }
+
             cart.getItems().add(newItem);
             cartItemRepository.save(newItem);
         }
@@ -144,7 +174,7 @@ public class CartService {
         List<CartItemDTO> itemDTOs = new ArrayList<>();
         if (cart.getItems() != null) {
             for (CartItem item : cart.getItems()) {
-                BigDecimal variantPrice = item.getVariant().getPrice() != null ? item.getVariant().getPrice()
+                BigDecimal variantPrice = (item.getVariant().getProduct() != null && item.getVariant().getProduct().getPrice() != null) ? item.getVariant().getProduct().getPrice()
                         : BigDecimal.ZERO;
                 BigDecimal lensPrice = (item.getLensOption() != null && item.getLensOption().getPrice() != null)
                         ? item.getLensOption().getPrice()
@@ -159,8 +189,10 @@ public class CartService {
                 CartItemDTO itemDTO = CartItemDTO.builder()
                         .cartItemId(item.getCartItemId())
                         .variantId(item.getVariant().getVariantId())
-                        .productName(
-                                item.getVariant().getProduct() != null ? item.getVariant().getProduct().getName() : "")
+                        .productId(item.getProductId() != null ? item.getProductId() : (item.getVariant().getProduct() != null ? item.getVariant().getProduct().getProductId() : null))
+                        .isLens(item.getIsLens())
+                        .isPreorder(item.getIsPreorder())
+                        .productName(item.getProductName() != null ? item.getProductName() : (item.getVariant().getProduct() != null ? item.getVariant().getProduct().getName() : ""))
                         .variantColor(item.getVariant().getColor())
                         .variantSize(item.getVariant().getFrameSize())
                         .imageUrl(item.getVariant().getImageUrl())

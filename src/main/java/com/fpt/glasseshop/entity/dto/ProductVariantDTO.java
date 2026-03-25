@@ -20,9 +20,6 @@ public class ProductVariantDTO {
     @Schema(description = "ID of the associated product", example = "1")
     private Long productId;
 
-    @Schema(description = "Price of this specific variant", example = "150.00")
-    private BigDecimal price;
-
     @Schema(description = "Quantity available in stock", example = "100")
     private Integer stockQuantity;
 

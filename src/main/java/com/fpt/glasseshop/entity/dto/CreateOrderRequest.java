@@ -13,19 +13,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Schema(description = "Request object to create a new order")
 public class CreateOrderRequest {
-    @NotNull(message = "Shipping address is required")
-    @Schema(description = "ID of the shipping address", example = "1")
-    private Long shippingAddressId;
-
-    @NotNull(message = "Billing address is required")
-    @Schema(description = "ID of the billing address", example = "1")
-    private Long billingAddressId;
-
-    @NotNull(message = "Order items are required")
-    private List<OrderItemRequest> items;
-
-    @Schema(description = "Payment method", example = "COD")
+    private String fullName;
+    private String phone;
+    private String address;
+    private String note;
     private String paymentMethod;
+    private java.math.BigDecimal shippingFee;
+    private java.math.BigDecimal voucherDiscount;
+    private String idempotencyKey;
 }

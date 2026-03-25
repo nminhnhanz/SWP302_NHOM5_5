@@ -35,6 +35,9 @@ public class ProductDTO {
     @JsonProperty("isPrescriptionSupported")
     private boolean isPrescriptionSupported;
 
+    @Schema(description = "Price of the product", example = "150.00")
+    private java.math.BigDecimal price;
+
     @Schema(description = "Timestamp when the product was created")
     private LocalDateTime createdAt;
 

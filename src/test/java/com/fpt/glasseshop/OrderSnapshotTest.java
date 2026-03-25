@@ -48,26 +48,20 @@ class OrderSnapshotTest {
         AddToCartRequest addReq = AddToCartRequest.builder()
                 .variantId(variant.getVariantId())
                 .lensOptionId(lens.getLensOptionId())
+                .isLens(true)
                 .quantity(1)
+                .sphLeft(new BigDecimal("-1.50"))
+                .sphRight(new BigDecimal("-1.50"))
+                .pd(new BigDecimal("63.0"))
                 .build();
         cartService.addToCart(customer, addReq);
 
         // 4. Checkout
         CreateOrderRequest checkoutReq = CreateOrderRequest.builder()
-                .shippingAddressId(1L) // Assuming it exists from seeding
-                .billingAddressId(1L)
+                .address("123 Main St")
+                .fullName("John Doe")
+                .phone("0123456789")
                 .paymentMethod("COD")
-                .items(Collections.singletonList(OrderItemRequest.builder()
-                        .variantId(variant.getVariantId())
-                        .lensOptionId(lens.getLensOptionId())
-                        .quantity(1)
-                        .prescription(PrescriptionDTO.builder()
-                                .sphLeft(new BigDecimal("-1.50"))
-                                .sphRight(new BigDecimal("-1.50"))
-                                .pd(new BigDecimal("63.0"))
-                                .doctorName("Dr. Quick")
-                                .build())
-                        .build()))
                 .build();
 
         OrderDTO order = orderService.createOrderFromCart(customer, checkoutReq);
@@ -80,12 +74,10 @@ class OrderSnapshotTest {
         System.out.println("Verifying snapshot for order: " + order.getOrderId());
         System.out.println("  Product Name: " + item.getProductName());
         System.out.println("  Lens Type: " + item.getLensType());
-        System.out.println("  Prescription Doctor: " + item.getPrescription().getDoctorName());
 
         assertEquals(variant.getProduct().getName(), item.getProductName());
         assertEquals(lens.getType(), item.getLensType());
         assertEquals(lens.getPrice(), item.getLensPrice());
-        assertEquals("Dr. Quick", item.getPrescription().getDoctorName());
 
         System.out.println("SNAPSHOT TEST PASSED!");
     }

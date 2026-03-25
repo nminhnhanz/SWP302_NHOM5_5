@@ -17,8 +17,11 @@ import java.time.LocalDateTime;
 public class ReviewDTO {
     private Long reviewId;
     private Long productId;
+    private String productName;
     private Long userId;
     private String userName;
+    private Long orderId;
+    private String orderCode;
 
     @NotNull(message = "Rating is required")
     @Min(value = 1, message = "Rating must be between 1 and 5")

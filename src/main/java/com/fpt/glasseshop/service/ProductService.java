@@ -75,6 +75,7 @@ public class ProductService {
                 .description(productDTO.getDescription())
                 .productType(productDTO.getProductType())
                 .isPrescriptionSupported(productDTO.isPrescriptionSupported())
+                .price(productDTO.getPrice())
                 .build();
         Product savedProduct = productRepository.save(product);
 
@@ -82,7 +83,6 @@ public class ProductService {
             List<ProductVariant> variants = productDTO.getVariants().stream()
                     .map(vDto -> ProductVariant.builder()
                             .product(savedProduct)
-                            .price(vDto.getPrice())
                             .stockQuantity(vDto.getStockQuantity())
                             .frameSize(vDto.getFrameSize())
                             .color(vDto.getColor())
@@ -126,6 +126,7 @@ public class ProductService {
                 .brand(product.getBrand())
                 .description(product.getDescription())
                 .isPrescriptionSupported(product.isPrescriptionSupported())
+                .price(product.getPrice())
                 .createdAt(product.getCreatedAt())
                 .variants(product.getVariants() != null
                         ? product.getVariants().stream()
@@ -143,7 +144,6 @@ public class ProductService {
                         variant.getProduct() != null
                                 ? variant.getProduct().getProductId()
                                 : null)
-                .price(variant.getPrice())
                 .stockQuantity(variant.getStockQuantity())
                 .frameSize(variant.getFrameSize())
                 .color(variant.getColor())
@@ -170,6 +170,7 @@ public class ProductService {
                 .brand(product.getBrand())
                 .description(product.getDescription())
                 .isPrescriptionSupported(product.isPrescriptionSupported())
+                .price(product.getPrice())
                 .createdAt(product.getCreatedAt())
                 .variants(variants)
                 .build();

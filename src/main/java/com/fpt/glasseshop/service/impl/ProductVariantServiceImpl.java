@@ -45,7 +45,6 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         }
         ProductVariant proVariant = new ProductVariant();
         proVariant.setProduct(pro);
-        proVariant.setPrice(request.getPrice());
         proVariant.setStockQuantity(request.getStockQuantity());
         proVariant.setFrameSize(request.getFrameSize());
         proVariant.setColor(request.getColor());
@@ -78,7 +77,6 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         ProductVariant proVariantExists = getProductVariantById(productVariantId);
         if(proVariantExists != null){
             proVariantExists.setColor(productVariant.getColor().trim());
-            proVariantExists.setPrice(productVariant.getPrice());
             proVariantExists.setFrameSize(productVariant.getFrameSize().trim());
             proVariantExists.setStatus(productVariant.getStatus());
             proVariantExists.setMaterial(productVariant.getMaterial().trim());
@@ -124,7 +122,6 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         return ProductVariantDTO.builder()
                 .variantId(variant.getVariantId())
                 .productId(variant.getProduct().getProductId())
-                .price(variant.getPrice())
                 .stockQuantity(variant.getStockQuantity())
                 .frameSize(variant.getFrameSize())
                 .color(variant.getColor())

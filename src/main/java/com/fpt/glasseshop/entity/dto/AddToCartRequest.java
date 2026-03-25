@@ -25,4 +25,19 @@ public class AddToCartRequest {
 
     @Schema(description = "ID of the lens option (optional)", example = "1")
     private Long lensOptionId;
+
+    @Schema(description = "Whether it is a lens", example = "false")
+    private Boolean isLens;
+
+    @Schema(description = "Whether it is a preorder", example = "false")
+    private Boolean isPreorder;
+
+    // Prescription fields
+    private java.math.BigDecimal sphLeft;
+    private java.math.BigDecimal sphRight;
+    private java.math.BigDecimal cylLeft;
+    private java.math.BigDecimal cylRight;
+    private Integer axisLeft;
+    private Integer axisRight;
+    private java.math.BigDecimal pd;
 }

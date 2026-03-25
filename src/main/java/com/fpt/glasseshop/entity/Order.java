@@ -23,6 +23,9 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long orderId;
 
+    @Column(unique = true, nullable = false, updatable = false)
+    private String orderCode;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserAccount user;
@@ -43,6 +46,18 @@ public class Order {
 
     private String paymentStatus;
     private String paymentMethod;
+
+    private String fullName;
+    private String phone;
+    private String address;
+    private String note;
+    
+    private BigDecimal shippingFee;
+    private BigDecimal voucherDiscount;
+    private BigDecimal finalPrice;
+
+    @Column(unique = true)
+    private String idempotencyKey;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems;

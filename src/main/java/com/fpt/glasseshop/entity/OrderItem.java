@@ -65,6 +65,15 @@ public class OrderItem {
     @Column(name = "snapshot_lens_option_id")
     private Long lensOptionId;
 
+    // Prescription Data
+    private BigDecimal sphLeft;
+    private BigDecimal sphRight;
+    private BigDecimal cylLeft;
+    private BigDecimal cylRight;
+    private Integer axisLeft;
+    private Integer axisRight;
+    private BigDecimal pd;
+
     @OneToOne(mappedBy = "orderItem", cascade = CascadeType.ALL)
     private Prescription prescription;
 
@@ -72,7 +81,8 @@ public class OrderItem {
     private PreOrder preOrder;
 
     public String getItemType() {
-        if (prescription != null)
+        if (prescription != null || sphLeft != null || sphRight != null ||
+                cylLeft != null || cylRight != null || axisLeft != null || axisRight != null || pd != null)
             return "PRESCRIPTION";
         if (preOrder != null)
             return "PRE_ORDER";

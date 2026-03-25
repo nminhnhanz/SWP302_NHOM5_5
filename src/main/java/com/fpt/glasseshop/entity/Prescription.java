@@ -26,6 +26,10 @@ public class Prescription {
     @JoinColumn(name = "order_item_id", unique = true)
     private OrderItem orderItem;
 
+    @OneToOne
+    @JoinColumn(name = "cart_item_id", unique = true)
+    private CartItem cartItem;
+
     private BigDecimal sphLeft;
     private BigDecimal sphRight;
     private BigDecimal cylLeft;
@@ -35,7 +39,9 @@ public class Prescription {
     private BigDecimal pd;
     private String doctorName;
     private LocalDate expirationDate;
-    private String status;
+    
+    // status = false (pending), status = true (approved)
+    private Boolean status;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder    
+@Builder
 @Table(name = "cart_item")
 public class CartItem {
     @Id
@@ -31,6 +31,20 @@ public class CartItem {
 
     private Integer quantity;
 
-    // test push
+    @Column(name = "product_id")
+    private Long productId;
 
+    @Column(name = "is_lens")
+    private Boolean isLens;
+
+    @Column(name = "is_preorder")
+    private Boolean isPreorder;
+
+    private java.math.BigDecimal price;
+
+    @Column(name = "product_name")
+    private String productName;
+
+    @OneToOne(mappedBy = "cartItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Prescription prescription;
 }

@@ -18,6 +18,9 @@ public class OrderDTO {
     @Schema(description = "Unique identifier of the order", example = "101")
     private Long orderId;
 
+    @Schema(description = "Human readable order code", example = "ORD-12345")
+    private String orderCode;
+
     @Schema(description = "ID of the user who placed the order", example = "5")
     private Long userId;
 
@@ -36,11 +39,14 @@ public class OrderDTO {
     @Schema(description = "Total price of the order", example = "250.00")
     private BigDecimal totalPrice;
 
-    @Schema(description = "Shipping address details")
-    private AddressDTO shippingAddress;
-
-    @Schema(description = "Billing address details")
-    private AddressDTO billingAddress;
+    private String fullName;
+    private String phone;
+    private String address;
+    private String note;
+    
+    private BigDecimal shippingFee;
+    private BigDecimal voucherDiscount;
+    private BigDecimal finalPrice;
 
     @Schema(description = "Payment status of the order", example = "PAID")
     private String paymentStatus;

@@ -6,6 +6,7 @@ import com.fpt.glasseshop.entity.dto.CreateOrderRequest;
 import com.fpt.glasseshop.entity.dto.OrderDTO;
 import com.fpt.glasseshop.repository.UserAccountRepository;
 import com.fpt.glasseshop.service.OrderService;
+import com.fpt.glasseshop.exception.ResourceNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -92,6 +93,22 @@ public class OrderRestController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Error during checkout: " + e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/status")
+    @Operation(summary = "Update order status", description = "Updates the status of an existing order")
+    public ResponseEntity<ApiResponse<OrderDTO>> updateOrderStatus(
+            Principal principal,
+            @Parameter(description = "ID of the order", example = "101") @PathVariable Long id,
+            @Parameter(description = "New status (WAITING_FOR_CONFIRMATION, DELIVERING, DELIVERED, CANCELED)", example = "DELIVERING") @RequestParam String status) {
+        try {
+            OrderDTO updatedOrder = orderService.updateOrderStatus(id, status);
+            return ResponseEntity.ok(ApiResponse.success("Order status updated", updatedOrder));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(e.getMessage()));
         }
     }
 

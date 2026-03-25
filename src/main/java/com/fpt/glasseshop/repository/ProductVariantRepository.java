@@ -28,6 +28,11 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
 
     List<ProductVariant> findByDeletedFalse();
 
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE ProductVariant v SET v.stockQuantity = v.stockQuantity - :quantity WHERE v.variantId = :variantId AND v.stockQuantity >= :quantity")
+    int decreaseStock(@org.springframework.data.repository.query.Param("variantId") Long variantId, @org.springframework.data.repository.query.Param("quantity") int quantity);
+
+
     List<ProductVariant> findByProduct_ProductIdAndActiveTrueAndDeletedFalse(Long productId);
 
 ;
