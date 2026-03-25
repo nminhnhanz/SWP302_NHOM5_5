@@ -1,0 +1,17 @@
+package com.fpt.glasseshop.entity.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ReturnRequestDTO {
+    private Long orderId;
+    private String reason;
+    private String description;
+    private String imageUrl;
+}
