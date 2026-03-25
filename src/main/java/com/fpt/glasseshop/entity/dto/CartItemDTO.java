@@ -20,6 +20,15 @@ public class CartItemDTO {
     @Schema(description = "ID of the product variant", example = "1")
     private Long variantId;
 
+    @Schema(description = "ID of the product", example = "1")
+    private Long productId;
+
+    @Schema(description = "Whether it is a lens", example = "false")
+    private Boolean isLens;
+
+    @Schema(description = "Whether it is a preorder", example = "false")
+    private Boolean isPreorder;
+
     @Schema(description = "Name of the product", example = "Classic Aviator")
     private String productName;
 
