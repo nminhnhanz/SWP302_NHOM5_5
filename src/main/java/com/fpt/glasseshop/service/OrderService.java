@@ -27,6 +27,7 @@ public class OrderService {
     private final CartRepository cartRepository;
     private final AddressRepository addressRepository;
     private final CartService cartService;
+    private final com.fpt.glasseshop.repository.ProductVariantRepository productVariantRepository;
 
     public Order saveOrder(Order order) {
         Order savedOrder = orderRepository.save(order);
@@ -63,6 +64,30 @@ public class OrderService {
         return getOrderById(orderId).map(this::convertToDTO);
     }
 
+    @Transactional
+    public OrderDTO updateOrderStatus(Long orderId, String newStatus) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+
+        java.util.List<String> validStatuses = java.util.Arrays.asList("PENDING", "DELIVERING", "DELIVERED", "CANCELED");
+        if (!validStatuses.contains(newStatus)) {
+            throw new IllegalArgumentException("Invalid order status: " + newStatus);
+        }
+
+        order.setStatus(newStatus);
+        
+        // Check if canceled to restore stock
+        if ("CANCELED".equals(newStatus)) {
+            for (OrderItem item : order.getOrderItems()) {
+                if (item.getVariantId() != null && item.getQuantity() != null) {
+                    productVariantRepository.decreaseStock(item.getVariantId(), -item.getQuantity()); // negative decrease = increase
+                }
+            }
+        }
+        
+        return convertToDTO(orderRepository.save(order));
+    }
+
     public void deleteOrder(Long id) {
         if (!orderRepository.existsById(id)) {
             throw new RuntimeException("Order not found with id: " + id);
@@ -72,69 +97,73 @@ public class OrderService {
 
     @Transactional
     public OrderDTO createOrderFromCart(UserAccount user, CreateOrderRequest request) {
-        // 1. Get User's Cart
-        Cart cart = cartRepository.findByUserUserId(user.getUserId())
+        // 0. Idempotency Check
+        if (request.getIdempotencyKey() != null && !request.getIdempotencyKey().trim().isEmpty()) {
+            Optional<Order> existingOrder = orderRepository.findByIdempotencyKey(request.getIdempotencyKey());
+            if (existingOrder.isPresent()) {
+                return convertToDTO(existingOrder.get());
+            }
+        }
+
+        // 1. Get User's Cart with Pessimistic Lock for Concurrency
+        Cart cart = cartRepository.findByUserUserIdForCheckout(user.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found for user: " + user.getUserId()));
 
         if (cart.getItems() == null || cart.getItems().isEmpty()) {
             throw new IllegalArgumentException("Cannot create order from an empty cart");
         }
 
-        // 2. Resolve Addresses
-        Address shippingAddress = addressRepository.findById(request.getShippingAddressId())
-                .orElseThrow(() -> new ResourceNotFoundException("Shipping address not found"));
-        Address billingAddress = addressRepository.findById(request.getBillingAddressId())
-                .orElseThrow(() -> new ResourceNotFoundException("Billing address not found"));
+        // 2. Initialize Calculations
+        BigDecimal totalPrice = BigDecimal.ZERO;
+        BigDecimal shippingFee = request.getShippingFee() != null ? request.getShippingFee() : BigDecimal.ZERO;
+        BigDecimal voucherDiscount = request.getVoucherDiscount() != null ? request.getVoucherDiscount() : BigDecimal.ZERO;
 
         // 3. Create Order Object
-        BigDecimal totalPrice = BigDecimal.ZERO;
+        String orderCode = "ORD-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        
         Order order = Order.builder()
                 .user(user)
-                .shippingAddress(shippingAddress)
-                .billingAddress(billingAddress)
+                .orderCode(orderCode)
+                .fullName(request.getFullName())
+                .phone(request.getPhone())
+                .address(request.getAddress())
+                .note(request.getNote())
+                .paymentMethod(request.getPaymentMethod())
+                .shippingFee(shippingFee)
+                .voucherDiscount(voucherDiscount)
+                .idempotencyKey(request.getIdempotencyKey())
                 .status("PENDING")
                 .paymentStatus("UNPAID")
-                .paymentMethod(request.getPaymentMethod())
                 .orderDate(LocalDateTime.now())
                 .orderItems(new ArrayList<>())
                 .build();
 
         // 4. Create OrderItems from CartItems and Calculate Total
         for (CartItem cartItem : cart.getItems()) {
-            BigDecimal variantPrice = (cartItem.getVariant().getProduct() != null && cartItem.getVariant().getProduct().getPrice() != null) ? cartItem.getVariant().getProduct().getPrice()
-                    : BigDecimal.ZERO;
+            if (cartItem.getQuantity() == null || cartItem.getQuantity() <= 0) {
+                throw new IllegalArgumentException("Invalid quantity for cart item");
+            }
+
+            // Atomic Stock Validation & Deduction
+            int updatedRows = productVariantRepository.decreaseStock(cartItem.getVariant().getVariantId(), cartItem.getQuantity());
+            if (updatedRows == 0) {
+                throw new IllegalArgumentException("Insufficient stock for product: " + (cartItem.getVariant().getProduct() != null ? cartItem.getVariant().getProduct().getName() : "Unknown"));
+            }
+
+            BigDecimal unitPrice = cartItem.getPrice() != null ? cartItem.getPrice() : BigDecimal.ZERO;
             BigDecimal lensPrice = (cartItem.getLensOption() != null && cartItem.getLensOption().getPrice() != null)
                     ? cartItem.getLensOption().getPrice()
                     : BigDecimal.ZERO;
-            BigDecimal unitPrice = variantPrice.add(lensPrice);
+
             BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(cartItem.getQuantity()));
-
             totalPrice = totalPrice.add(subtotal);
-
-            // Find matching request item to get prescription if provided
-            PrescriptionDTO prescriptionDTO = null;
-            if (request.getItems() != null) {
-                prescriptionDTO = request.getItems().stream()
-                        .filter(ri -> ri.getVariantId().equals(cartItem.getVariant().getVariantId()) &&
-                                ((ri.getLensOptionId() == null && cartItem.getLensOption() == null) ||
-                                        (ri.getLensOptionId() != null && cartItem.getLensOption() != null
-                                                && ri.getLensOptionId()
-                                                        .equals(cartItem.getLensOption().getLensOptionId()))))
-                        .map(OrderItemRequest::getPrescription)
-                        .findFirst()
-                        .orElse(null);
-            }
 
             OrderItem orderItem = OrderItem.builder()
                     .order(order)
                     .variant(cartItem.getVariant())
                     .variantId(cartItem.getVariant() != null ? cartItem.getVariant().getVariantId() : null)
-                    .productId(cartItem.getVariant() != null && cartItem.getVariant().getProduct() != null
-                            ? cartItem.getVariant().getProduct().getProductId()
-                            : null)
-                    .productName(cartItem.getVariant() != null && cartItem.getVariant().getProduct() != null
-                            ? cartItem.getVariant().getProduct().getName()
-                            : null)
+                    .productId(cartItem.getVariant() != null && cartItem.getVariant().getProduct() != null ? cartItem.getVariant().getProduct().getProductId() : (cartItem.getProductId() != null ? cartItem.getProductId() : null))
+                    .productName(cartItem.getVariant() != null && cartItem.getVariant().getProduct() != null ? cartItem.getVariant().getProduct().getName() : (cartItem.getProductName() != null ? cartItem.getProductName() : null))
                     .variantColor(cartItem.getVariant() != null ? cartItem.getVariant().getColor() : null)
                     .variantSize(cartItem.getVariant() != null ? cartItem.getVariant().getFrameSize() : null)
                     .imageUrl(cartItem.getVariant() != null ? cartItem.getVariant().getImageUrl() : null)
@@ -145,23 +174,24 @@ public class OrderService {
                     .lensCoating(cartItem.getLensOption() != null ? cartItem.getLensOption().getCoating() : null)
                     .quantity(cartItem.getQuantity())
                     .unitPrice(unitPrice)
-                    .fulfillmentType(prescriptionDTO != null ? "PRESCRIPTION" : "IN_STOCK")
+                    .fulfillmentType(cartItem.getPrescription() != null ? "PRESCRIPTION" : "IN_STOCK")
                     .build();
 
-            // Handle prescription if it exists
-            if (prescriptionDTO != null) {
+            if (cartItem.getPrescription() != null) {
+                Prescription cartP = cartItem.getPrescription();
                 Prescription p = Prescription.builder()
                         .orderItem(orderItem)
-                        .sphLeft(prescriptionDTO.getSphLeft())
-                        .sphRight(prescriptionDTO.getSphRight())
-                        .cylLeft(prescriptionDTO.getCylLeft())
-                        .cylRight(prescriptionDTO.getCylRight())
-                        .axisLeft(prescriptionDTO.getAxisLeft())
-                        .axisRight(prescriptionDTO.getAxisRight())
-                        .pd(prescriptionDTO.getPd())
-                        .doctorName(prescriptionDTO.getDoctorName())
-                        .expirationDate(prescriptionDTO.getExpirationDate())
-                        .status("PENDING_VERIFICATION")
+                        .cartItem(null)
+                        .sphLeft(cartP.getSphLeft())
+                        .sphRight(cartP.getSphRight())
+                        .cylLeft(cartP.getCylLeft())
+                        .cylRight(cartP.getCylRight())
+                        .axisLeft(cartP.getAxisLeft())
+                        .axisRight(cartP.getAxisRight())
+                        .pd(cartP.getPd())
+                        .doctorName(cartP.getDoctorName())
+                        .expirationDate(cartP.getExpirationDate())
+                        .status(cartP.getStatus() != null ? cartP.getStatus() : false)
                         .build();
                 orderItem.setPrescription(p);
             }
@@ -170,8 +200,9 @@ public class OrderService {
         }
 
         order.setTotalPrice(totalPrice);
+        order.setFinalPrice(totalPrice.add(shippingFee).subtract(voucherDiscount));
 
-        // 5. Save Order (Cascade should save items)
+        // 5. Save Order
         Order savedOrder = orderRepository.save(order);
 
         // 6. Clear Cart
@@ -188,16 +219,22 @@ public class OrderService {
     private OrderDTO convertToDTO(Order order) {
         return OrderDTO.builder()
                 .orderId(order.getOrderId())
+                .orderCode(order.getOrderCode())
                 .userId(order.getUser() != null ? order.getUser().getUserId() : null)
                 .userName(order.getUser() != null ? order.getUser().getName() : null)
                 .userEmail(order.getUser() != null ? order.getUser().getEmail() : null)
                 .orderDate(order.getOrderDate())
                 .status(order.getStatus())
                 .totalPrice(order.getTotalPrice())
+                .fullName(order.getFullName())
+                .phone(order.getPhone())
+                .address(order.getAddress())
+                .note(order.getNote())
+                .shippingFee(order.getShippingFee())
+                .voucherDiscount(order.getVoucherDiscount())
+                .finalPrice(order.getFinalPrice())
                 .paymentStatus(order.getPaymentStatus())
                 .paymentMethod(order.getPaymentMethod())
-                .shippingAddress(mapToAddressDTO(order.getShippingAddress()))
-                .billingAddress(mapToAddressDTO(order.getBillingAddress()))
                 .orderItems(order.getOrderItems() != null ? order.getOrderItems().stream()
                         .map(this::mapToItemDTO)
                         .collect(Collectors.toList()) : null)

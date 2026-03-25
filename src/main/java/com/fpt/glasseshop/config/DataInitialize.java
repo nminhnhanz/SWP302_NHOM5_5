@@ -261,7 +261,7 @@ public class DataInitialize implements CommandLineRunner {
                 Prescription p1 = Prescription.builder()
                                 .orderItem(i1)
                                 .doctorName("Dr. Smith")
-                                .status("VERIFIED")
+                                .status(true)
                                 .sphLeft(new BigDecimal("-1.50"))
                                 .sphRight(new BigDecimal("-1.75"))
                                 .pd(new BigDecimal("63.0"))
