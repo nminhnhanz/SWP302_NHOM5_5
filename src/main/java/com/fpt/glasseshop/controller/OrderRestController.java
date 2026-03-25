@@ -106,4 +106,14 @@ public class OrderRestController {
             return ResponseEntity.status(404).body(ApiResponse.error(e.getMessage()));
         }
     }
+
+    @GetMapping("/customers/count")
+    public ResponseEntity<ApiResponse<Long>> getTotalCustomers(){
+        return ResponseEntity.ok(ApiResponse.success("Get total customers successfully", orderService.getTotalCustomersPaid()));
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<ApiResponse<Long>> getTotalOrders() {
+        return ResponseEntity.ok(ApiResponse.success("Get total orders successfully", orderService.getTotalOrdersPaid()));
+    }
 }

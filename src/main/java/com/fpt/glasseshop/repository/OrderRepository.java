@@ -38,4 +38,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to
     );
+
+    @Query("""
+    SELECT COUNT(DISTINCT o.user.userId)
+        FROM Order o
+        WHERE o.paymentStatus = 'PAID'
+    """)
+    long countCustomersPaid();
+
+    long countByPaymentStatus(String paymentStatus);
 }

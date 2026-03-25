@@ -260,4 +260,12 @@ public class OrderService {
                 .build();
     }
 
+    public long getTotalCustomersPaid() {
+        return orderRepository.countCustomersPaid();
+    }
+
+    public long getTotalOrdersPaid() {
+        return orderRepository.countByPaymentStatus("PAID");
+    }
+
 }
