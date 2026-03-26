@@ -67,9 +67,7 @@ public class OrderService {
     @Transactional
     public OrderDTO updateOrderStatus(Long orderId, String newStatus) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
-
-        java.util.List<String> validStatuses = java.util.Arrays.asList("PENDING", "DELIVERING", "DELIVERED", "CANCELED");
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));java.util.List<String> validStatuses = java.util.Arrays.asList("PENDING", "PROCESSING", "DELIVERING", "DELIVERED", "CANCELED");
         if (!validStatuses.contains(newStatus)) {
             throw new IllegalArgumentException("Invalid order status: " + newStatus);
         }
