@@ -1,14 +1,18 @@
 package com.fpt.glasseshop.controller;
 
-import com.fpt.glasseshop.entity.AuthData;
+import com.fpt.glasseshop.entity.UserAccount;
 import com.fpt.glasseshop.entity.dto.ApiResponse;
 import com.fpt.glasseshop.entity.dto.UserAccountDTO;
 import com.fpt.glasseshop.entity.dto.request.UpdateProfileRequest;
 import com.fpt.glasseshop.service.UserAccountService;
+import com.fpt.glasseshop.security.JwtUtil;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import lombok.RequiredArgsConstructor;
+
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,59 +26,82 @@ import java.util.List;
 public class UserAccountRestController {
 
     private final UserAccountService userAccountService;
+    private final JwtUtil jwtUtil; // ✅ FIX: inject JwtUtil
 
-    @GetMapping("getAllUsers")
+    // ================= GET ALL USERS =================
+    @GetMapping("/getAllUsers")
     @Operation(summary = "Get all users", description = "Retrieves a list of all user accounts (Admin only)")
     public ResponseEntity<ApiResponse<List<UserAccountDTO>>> getAllUsers() {
         List<UserAccountDTO> users = userAccountService.getAllUsersDTO();
         return ResponseEntity.ok(ApiResponse.success(users));
     }
 
+    // ================= GET USER BY ID =================
     @GetMapping("/{id}")
-    @Operation(summary = "Get user by ID", description = "Retrieves details of a specific user by their ID")
+    @Operation(summary = "Get user by ID")
     public ResponseEntity<ApiResponse<UserAccountDTO>> getUserById(
-            @Parameter(description = "ID of the user to retrieve", example = "5") @PathVariable Long id) {
+            @Parameter(description = "User ID") @PathVariable Long id) {
+
         return userAccountService.getUserDTOById(id)
                 .map(user -> ResponseEntity.ok(ApiResponse.success(user)))
                 .orElse(ResponseEntity.status(404).body(ApiResponse.error("User not found")));
     }
+
+    // ================= CHECK EMAIL =================
     @PostMapping("/check-email")
-    @Operation(summary = "Check email", description = "Return true / false")
     public ResponseEntity<ApiResponse<Boolean>> checkEmail(@RequestParam String email) {
-        System.out.println("Email received: " + email); // Debug
         boolean exists = userAccountService.checkEmailExists(email);
-        System.out.println("Exists: " + exists); // Debug
         return ResponseEntity.ok(ApiResponse.success(exists));
     }
 
+    // ================= CREATE USER =================
     @PostMapping("/create")
-    @Operation(summary = "Create a new user", description = "Adds a new user account to the system")
-    public ResponseEntity<ApiResponse<UserAccountDTO>> createUser(@RequestBody UserAccountDTO userDTO) {
+    public ResponseEntity<ApiResponse<UserAccountDTO>> createUser(
+            @RequestBody UserAccountDTO userDTO) {
+
         UserAccountDTO created = userAccountService.createUser(userDTO);
-        return ResponseEntity.status(201).body(ApiResponse.success("User created successfully", created));
+        return ResponseEntity.status(201)
+                .body(ApiResponse.success("User created successfully", created));
     }
 
-    @PostMapping("/authencation")
-    @Operation(summary = "Authentication using email and password")
-    public AuthData authenticate(@RequestParam String email, @RequestParam String password) {
-        AuthData authData = new AuthData();
+    // ================= LOGIN =================
+    @PostMapping("/login")
+    @Operation(summary = "Login and get JWT token")
+    public ResponseEntity<ApiResponse<String>> login(
+            @RequestParam String email,
+            @RequestParam String password) {
 
-        authData.setStatus(userAccountService.authenticate(email,password));
-            if (authData.getStatus())authData.setUserId(userAccountService.getUserIdByEmail(email));
-            return authData;
+        boolean isAuth = userAccountService.authenticate(email, password);
+
+        if (!isAuth) {
+            return ResponseEntity.status(401)
+                    .body(ApiResponse.error("Invalid email or password"));
+        }
+
+        // ✅ FIX: lấy user để lấy role
+        UserAccount user = userAccountService.getUserByEmail(email);
+
+        // ✅ FIX: generate token có role
+        String token = jwtUtil.generateToken(user.getUserId(),user.getEmail(), user.getRole());
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Login successful", token)
+        );
     }
+
+    // ================= DELETE USER =================
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete a user", description = "Removes a user account from the system")
-    public ResponseEntity<ApiResponse<Void>> deleteUser(
-            @Parameter(description = "ID of the user to delete", example = "5") @PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long id) {
         try {
             userAccountService.deleteUser(id);
             return ResponseEntity.ok(ApiResponse.success("User deleted successfully", null));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body(ApiResponse.error(e.getMessage()));
+            return ResponseEntity.status(404)
+                    .body(ApiResponse.error(e.getMessage()));
         }
     }
 
+    // ================= UPDATE PROFILE =================
     @PatchMapping("/profile")
     public ResponseEntity<ApiResponse<UserAccountDTO>> updateMyProfile(
             @RequestBody UpdateProfileRequest request) throws BadRequestException {

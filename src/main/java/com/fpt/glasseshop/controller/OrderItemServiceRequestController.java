@@ -12,9 +12,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -26,27 +27,34 @@ public class OrderItemServiceRequestController {
     private final OrderItemServiceRequestService service;
     private final UserAccountRepository userAccountRepository;
 
-    private UserAccount getAuthenticatedUser(Principal principal) {
-        if (principal == null) {
-            throw new org.springframework.security.access.AccessDeniedException("User is not authenticated");
+    // ✅ Lấy user từ JWT (SecurityContext)
+    private UserAccount getCurrentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        if (email == null) {
+            throw new AccessDeniedException("User is not authenticated");
         }
-        return userAccountRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new org.springframework.security.access.AccessDeniedException(
-                        "Authenticated user not found"));
+
+        return userAccountRepository.findByEmail(email)
+                .orElseThrow(() -> new AccessDeniedException("User not found"));
     }
 
     @PostMapping
     @Operation(summary = "Submit a service request", description = "Submit a return, warranty, or refund request for an order item.")
     public ResponseEntity<ApiResponse<OrderItemServiceRequest>> submitRequest(
-            Principal principal,
-            @Valid @RequestBody SubmitServiceRequest request) {
+            @Valid @RequestBody SubmitServiceRequest req) {
+
         try {
-            UserAccount user = getAuthenticatedUser(principal);
-            OrderItemServiceRequest savedRequest = service.submitRequest(user, request);
+            UserAccount user = getCurrentUser();
+
+            OrderItemServiceRequest savedRequest = service.submitRequest(user, req);
+
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success("Service request submitted successfully", savedRequest));
+
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(e.getMessage()));
         }
     }
 
@@ -54,13 +62,16 @@ public class OrderItemServiceRequestController {
     @Operation(summary = "Get requests by Order Item ID", description = "Retrieves a list of service requests associated with a specific order item.")
     public ResponseEntity<ApiResponse<List<OrderItemServiceRequest>>> getRequestsByOrderItemId(
             @PathVariable Long orderItemId) {
+
         List<OrderItemServiceRequest> requests = service.getRequestsByOrderItemId(orderItemId);
         return ResponseEntity.ok(ApiResponse.success(requests));
     }
 
     @GetMapping
     @Operation(summary = "Get all requests", description = "Retrieves all service requests (For managers/admins).")
-    public ResponseEntity<ApiResponse<List<OrderItemServiceRequest>>> getAllRequests() {
+    public ResponseEntity<ApiResponse<List<OrderItemServiceRequest>>>
+    getAllRequests() {
+
         List<OrderItemServiceRequest> requests = service.getAllRequests();
         return ResponseEntity.ok(ApiResponse.success(requests));
     }

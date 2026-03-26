@@ -17,6 +17,9 @@ public class AddToCartRequest {
     @NotNull(message = "Variant ID is required")
     @Schema(description = "ID of the product variant", example = "1")
     private Long variantId;
+    @Schema(description = "ID of the product", example = "10")
+    @NotNull(message = "Product ID is required")
+    private Long productId;
 
     @NotNull(message = "Quantity is required")
     @Min(value = 1, message = "Quantity must be at least 1")

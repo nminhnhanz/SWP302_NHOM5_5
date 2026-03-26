@@ -62,7 +62,12 @@ public class CartService {
 
         // Check if item already exists in cart with same variant
         Optional<CartItem> existingItemOpt = cart.getItems().stream()
-                .filter(item -> item.getVariant().getVariantId().equals(variant.getVariantId()))
+                .filter(item ->
+                        item.getProductId() != null &&
+                                request.getProductId() != null &&
+                                item.getProductId().equals(request.getProductId()) &&
+                                item.getVariant().getVariantId().equals(variant.getVariantId())
+                )
                 .findFirst();
 
         if (existingItemOpt.isPresent()) {
@@ -76,13 +81,13 @@ public class CartService {
             java.math.BigDecimal variantPriceVal = variant.getProduct() != null && variant.getProduct().getPrice() != null ? variant.getProduct().getPrice() : java.math.BigDecimal.ZERO;
             java.math.BigDecimal lensPriceVal = lensOption != null && lensOption.getPrice() != null ? lensOption.getPrice() : java.math.BigDecimal.ZERO;
             java.math.BigDecimal price = variantPriceVal.add(lensPriceVal);
-            
+
             CartItem newItem = CartItem.builder()
                     .cart(cart)
                     .variant(variant)
                     .lensOption(lensOption)
                     .quantity(request.getQuantity())
-                    .productId(variant.getProduct() != null ? variant.getProduct().getProductId() : null)
+                    .productId(request.getProductId())
                     .productName(variant.getProduct() != null ? variant.getProduct().getName() : null)
                     .price(price)
                     .isLens(request.getIsLens() != null ? request.getIsLens() : false)

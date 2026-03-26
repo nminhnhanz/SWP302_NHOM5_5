@@ -62,4 +62,14 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems;
 
+    @PrePersist
+    public void prePersist() {
+        if (this.orderCode == null) {
+            this.orderCode = "ORD-" + java.util.UUID.randomUUID()
+                    .toString()
+                    .substring(0, 8)
+                    .toUpperCase();
+        }
+    }
+
 }

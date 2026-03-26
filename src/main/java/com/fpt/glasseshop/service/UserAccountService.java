@@ -77,6 +77,11 @@ public class UserAccountService {
                 .build();
     }
 
+    public UserAccount getUserByEmail(String email) {
+        return userAccountRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
     public UserAccountDTO updateUserProfile(UpdateProfileRequest request) throws BadRequestException {
         UserAccount user = getCurrentUser();
 

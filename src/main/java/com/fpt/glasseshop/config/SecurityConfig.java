@@ -1,18 +1,20 @@
 package com.fpt.glasseshop.config;
 
+import com.fpt.glasseshop.security.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.*;
 
 import java.util.List;
 
@@ -20,6 +22,12 @@ import java.util.List;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    private final JwtFilter jwtFilter;
+
+    public SecurityConfig(JwtFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
 
     @Bean
     public static PasswordEncoder passwordEncoder() {
@@ -33,58 +41,80 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         http
                 .csrf(csrf -> csrf.disable())
+
+                // ✅ Stateless JWT
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
                 .authorizeHttpRequests(auth -> auth
+
+                        // ===== PUBLIC =====
                         .requestMatchers("/", "/login/**", "/register/**").permitAll()
+                        .requestMatchers("/api/users/login").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico").permitAll()
-                        // Swagger/OpenAPI docs
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers(
+                                "/api/users/login",
+                                "/api/users/create",
+                                "/api/users/check-email",
+                                "/api/users/google-login"
+                        ).permitAll()
 
-                        // Public Product APIs
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/products/**").permitAll()
 
-                        // Admin Only: Full access to Products, Users, and Order deletion
-                        .requestMatchers("/api/users/**").hasRole("ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/products/**").hasRole("ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/products/**")
-                        .hasRole("ADMIN")
+                        // ===== PUBLIC PRODUCTS =====
+                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
 
-                        // Staff & Admin: View all orders and update status
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/orders")
-                        .hasAnyRole("OPERATIONAL_STAFF", "ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/orders/**")
-                        .hasAnyRole("OPERATIONAL_STAFF", "ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.PATCH, "/api/orders/**")
-                        .hasAnyRole("OPERATIONAL_STAFF", "ADMIN")
+                        // ===== ADMIN =====
+                        .requestMatchers(HttpMethod.POST, "/api/products/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN")
 
-                        // Customer & Authenticated: Checkout, Cart, Own Orders
+                        .requestMatchers("/admin/**").hasRole("ADMIN") // 🔥 FIX
+
+                        // ===== STAFF =====
+                        .requestMatchers(HttpMethod.GET, "/api/orders").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/orders/**").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/api/orders/**").permitAll()
+
+                        // ===== USER =====
                         .requestMatchers("/api/cart/**").authenticated()
                         .requestMatchers("/api/orders/checkout").authenticated()
+                        .requestMatchers("/api/orders/my").authenticated()
                         .requestMatchers("/api/orders/user/**").authenticated()
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/orders/{id}").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/orders/*").authenticated() // 🔥 FIX
                         .requestMatchers("/api/payments/**").authenticated()
+                        .requestMatchers("/api/reviews/**").authenticated() // 🔥 FIX
+
+                        // ===== RETURN REQUEST =====
+                        .requestMatchers(HttpMethod.POST, "/api/return-requests/**").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/api/return-requests/**").hasRole("ADMIN")
 
                         .requestMatchers("/operational-staff/**").hasAnyRole("OPERATIONAL_STAFF", "ADMIN")
-                        .anyRequest().authenticated())
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/", true)
-                        .permitAll())
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
-                        .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID")
-                        .permitAll());
+
+                        .anyRequest().authenticated()
+                )
+
+                // ❌ JWT → disable form login
+                .formLogin(form -> form.disable())
+                .logout(logout -> logout.disable());
+
+        // ✅ JWT FILTER
+        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration configuration = new CorsConfiguration();
+
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5173",
                 "http://localhost:3000"
@@ -103,4 +133,3 @@ public class SecurityConfig {
         return source;
     }
 }
-
