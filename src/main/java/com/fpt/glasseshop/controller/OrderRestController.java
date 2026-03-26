@@ -4,19 +4,18 @@ import com.fpt.glasseshop.entity.UserAccount;
 import com.fpt.glasseshop.entity.dto.ApiResponse;
 import com.fpt.glasseshop.entity.dto.CreateOrderRequest;
 import com.fpt.glasseshop.entity.dto.OrderDTO;
+import com.fpt.glasseshop.exception.ResourceNotFoundException;
 import com.fpt.glasseshop.repository.UserAccountRepository;
 import com.fpt.glasseshop.service.OrderService;
-import com.fpt.glasseshop.exception.ResourceNotFoundException;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -28,68 +27,70 @@ public class OrderRestController {
     private final OrderService orderService;
     private final UserAccountRepository userAccountRepository;
 
-    private UserAccount getAuthenticatedUser(Principal principal) {
-        if (principal == null) {
-            throw new org.springframework.security.access.AccessDeniedException("User is not authenticated");
+    // ✅ LẤY USER TỪ JWT
+    private UserAccount getCurrentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        if (email == null) {
+            throw new AccessDeniedException("User is not authenticated");
         }
-        return userAccountRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new org.springframework.security.access.AccessDeniedException(
-                        "Authenticated user not found"));
+
+        return userAccountRepository.findByEmail(email)
+                .orElseThrow(() -> new AccessDeniedException("User not found"));
     }
 
-    private void checkIfOwnerOrStaff(Long userId, Principal principal) {
-        UserAccount currentUser = getAuthenticatedUser(principal);
+    private void checkIfOwnerOrStaff(Long userId, UserAccount currentUser) {
         boolean isStaffOrAdmin = "ADMIN".equals(currentUser.getRole())
                 || "OPERATIONAL_STAFF".equals(currentUser.getRole());
+
         if (!userId.equals(currentUser.getUserId()) && !isStaffOrAdmin) {
-            throw new org.springframework.security.access.AccessDeniedException(
-                    "You are not authorized to access this information");
+            throw new AccessDeniedException("You are not authorized to access this information");
         }
     }
 
     @GetMapping
-    @Operation(summary = "Get all orders", description = "Retrieves a list of all orders (Admin/Staff only)")
     public ResponseEntity<ApiResponse<List<OrderDTO>>> getAllOrders() {
         List<OrderDTO> orders = orderService.getAllOrdersDTO();
         return ResponseEntity.ok(ApiResponse.success(orders));
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get order by ID", description = "Retrieves details of a specific order by its unique identifier")
-    public ResponseEntity<ApiResponse<OrderDTO>> getOrderById(
-            Principal principal,
-            @Parameter(description = "ID of the order to retrieve", example = "101") @PathVariable Long id) {
+    public ResponseEntity<ApiResponse<OrderDTO>> getOrderById(@PathVariable Long id) {
+
         return orderService.getOrderDTOById(id)
                 .map(order -> {
-                    checkIfOwnerOrStaff(order.getUserId(), principal);
+                    UserAccount currentUser = getCurrentUser();
+                    checkIfOwnerOrStaff(order.getUserId(), currentUser);
                     return ResponseEntity.ok(ApiResponse.success(order));
                 })
                 .orElse(ResponseEntity.status(404).body(ApiResponse.error("Order not found")));
     }
 
     @GetMapping("/user/{userId}")
-    @Operation(summary = "Get orders by User ID", description = "Retrieves a list of orders placed by a specific user")
-    public ResponseEntity<ApiResponse<List<OrderDTO>>> getOrdersByUserId(
-            Principal principal,
-            @Parameter(description = "ID of the user", example = "5") @PathVariable Long userId) {
-        checkIfOwnerOrStaff(userId, principal);
+    public ResponseEntity<ApiResponse<List<OrderDTO>>> getOrdersByUserId(@PathVariable Long userId) {
+
+        UserAccount currentUser = getCurrentUser();
+        checkIfOwnerOrStaff(userId, currentUser);
+
         List<OrderDTO> orders = orderService.getOrdersDTOByUserId(userId);
         return ResponseEntity.ok(ApiResponse.success(orders));
     }
 
-    // Users should use /checkout for order creation from cart
     @PostMapping("/checkout")
-    @Operation(summary = "Checkout cart to create order", description = "Creates an order from the user's current shopping cart")
     public ResponseEntity<ApiResponse<OrderDTO>> checkout(
-            Principal principal,
-            @Valid @RequestBody CreateOrderRequest request) {
+            @Valid @RequestBody CreateOrderRequest req) {
+
         try {
-            UserAccount user = getAuthenticatedUser(principal);
-            OrderDTO orderDTO = orderService.createOrderFromCart(user, request);
+            UserAccount user = getCurrentUser();
+            OrderDTO orderDTO = orderService.createOrderFromCart(user, req);
+
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success("Order completed successfully", orderDTO));
+
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(e.getMessage()));
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Error during checkout: " + e.getMessage()));
@@ -97,40 +98,56 @@ public class OrderRestController {
     }
 
     @PatchMapping("/{id}/status")
-    @Operation(summary = "Update order status", description = "Updates the status of an existing order")
     public ResponseEntity<ApiResponse<OrderDTO>> updateOrderStatus(
-            Principal principal,
-            @Parameter(description = "ID of the order", example = "101") @PathVariable Long id,
-            @Parameter(description = "New status (WAITING_FOR_CONFIRMATION, DELIVERING, DELIVERED, CANCELED)", example = "DELIVERING") @RequestParam String status) {
+            @PathVariable Long id,
+            @RequestParam String status) {
+
         try {
             OrderDTO updatedOrder = orderService.updateOrderStatus(id, status);
             return ResponseEntity.ok(ApiResponse.success("Order status updated", updatedOrder));
+
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(e.getMessage()));
+
         } catch (ResourceNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.error(e.getMessage()));
         }
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete an order", description = "Removes an order by its unique identifier")
-    public ResponseEntity<ApiResponse<Void>> deleteOrder(
-            @Parameter(description = "ID of the order to delete", example = "101") @PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deleteOrder(@PathVariable Long id) {
         try {
             orderService.deleteOrder(id);
             return ResponseEntity.ok(ApiResponse.success("Order deleted successfully", null));
+
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body(ApiResponse.error(e.getMessage()));
+            return ResponseEntity.status(404)
+                    .body(ApiResponse.error(e.getMessage()));
         }
     }
 
     @GetMapping("/customers/count")
-    public ResponseEntity<ApiResponse<Long>> getTotalCustomers(){
-        return ResponseEntity.ok(ApiResponse.success("Get total customers successfully", orderService.getTotalCustomersPaid()));
+    public ResponseEntity<ApiResponse<Long>> getTotalCustomers() {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Get total customers successfully",
+                orderService.getTotalCustomersPaid()
+        ));
     }
 
     @GetMapping("/count")
     public ResponseEntity<ApiResponse<Long>> getTotalOrders() {
-        return ResponseEntity.ok(ApiResponse.success("Get total orders successfully", orderService.getTotalOrdersPaid()));
+        return ResponseEntity.ok(ApiResponse.success(
+                "Get total orders successfully",
+                orderService.getTotalOrdersPaid()
+        ));
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<ApiResponse<List<OrderDTO>>> getMyOrders() {
+        UserAccount currentUser = getCurrentUser();
+        List<OrderDTO> orders = orderService.getOrdersDTOByUserId(currentUser.getUserId());
+        return ResponseEntity.ok(ApiResponse.success(orders));
     }
 }

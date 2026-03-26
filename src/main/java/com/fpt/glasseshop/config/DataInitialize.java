@@ -102,7 +102,7 @@ public class DataInitialize implements CommandLineRunner {
                                 .frameSize("Medium")
                                 .color("Gold")
                                 .material("Metal")
-                                .imageUrl("https://example.com/aviator-gold.jpg")
+                                .imageUrl("https://rocketeyewear.com/cdn/shop/files/RocketEyewear-240907-46.png?v=1728279234")
                                 .status("AVAILABLE")
                                 .active(true)
                                 .deleted(false)
@@ -114,7 +114,7 @@ public class DataInitialize implements CommandLineRunner {
                                 .frameSize("Large")
                                 .color("Black")
                                 .material("Metal")
-                                .imageUrl("https://example.com/aviator-black.jpg")
+                                .imageUrl("https://assets2.glasses.com/cdn-record-files-pi/9f81c8ee-571c-4e24-aa12-a358001ddb43/c12584a8-28ee-4a99-8ba6-ad33014b4b22/0RX5154__2000__STD__shad__qt.png?impolicy=GL_parameters_transp_clone1440")
                                 .status("AVAILABLE")
                                 .active(true)
                                 .deleted(false)
@@ -138,7 +138,7 @@ public class DataInitialize implements CommandLineRunner {
                                 .frameSize("Small")
                                 .color("Blue")
                                 .material("Plastic")
-                                .imageUrl("https://example.com/reader-blue.jpg")
+                                .imageUrl("https://static.zennioptical.com/production/products/general/44/67/4467121-eyeglasses-angle-view.jpg")
                                 .status("AVAILABLE")
                                 .active(true)
                                 .deleted(false)
@@ -160,7 +160,7 @@ public class DataInitialize implements CommandLineRunner {
                                 .stockQuantity(500)
                                 .color("N/A")
                                 .material("Liquid/Cloth")
-                                .imageUrl("https://example.com/cleaning-kit.jpg")
+                                .imageUrl("https://rocketeyewear.com/cdn/shop/files/RocketEyewear-240907-46.png?v=1728279234")
                                 .status("AVAILABLE")
                                 .active(true)
                                 .deleted(false)
@@ -235,6 +235,7 @@ public class DataInitialize implements CommandLineRunner {
                                 .shippingAddress(address)
                                 .billingAddress(address)
                                 .paymentStatus("PAID")
+                        .orderCode("ORD-1234567890")
                                 .build();
                 orderRepository.save(o1);
 
@@ -277,6 +278,7 @@ public class DataInitialize implements CommandLineRunner {
                                 .shippingAddress(address)
                                 .billingAddress(address)
                                 .paymentStatus("PAID")
+                        .orderCode("ORD-98765432101")
                                 .build();
                 orderRepository.save(o2);
 
@@ -303,6 +305,7 @@ public class DataInitialize implements CommandLineRunner {
                                 .shippingAddress(address)
                                 .billingAddress(address)
                                 .paymentStatus("PAID")
+                        .orderCode("ORD-12345678903")
                                 .build();
                 orderRepository.save(o3);
 

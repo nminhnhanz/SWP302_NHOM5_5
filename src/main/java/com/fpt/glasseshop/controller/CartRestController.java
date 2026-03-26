@@ -6,13 +6,15 @@ import com.fpt.glasseshop.entity.dto.CartDTO;
 import com.fpt.glasseshop.entity.dto.CartItemDTO;
 import com.fpt.glasseshop.repository.UserAccountRepository;
 import com.fpt.glasseshop.service.CartService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import java.util.List;
 
 @RestController
@@ -23,22 +25,18 @@ public class CartRestController {
     private final CartService cartService;
     private final UserAccountRepository userAccountRepository;
 
-    private UserAccount getAuthenticatedUser(Principal principal) {
-        if (principal == null) {
-            throw new IllegalArgumentException("User is not authenticated");
-        }
-        return userAccountRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new IllegalArgumentException("Authenticated user not found"));
+    // ✅ LẤY USER TỪ JWT
+    private UserAccount getCurrentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        return userAccountRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     @GetMapping
-    public ResponseEntity<CartDTO> getCart(Principal principal) {
-        try {
-            UserAccount user = getAuthenticatedUser(principal);
-            return ResponseEntity.ok(cartService.getCart(user));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+    public ResponseEntity<CartDTO> getCart() {
+        UserAccount user = getCurrentUser();
+        return ResponseEntity.ok(cartService.getCart(user));
     }
 
     @GetMapping("/user/{userId}")
@@ -47,39 +45,23 @@ public class CartRestController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<CartDTO> addToCart(
-            Principal principal,
-            @Valid @RequestBody AddToCartRequest request) {
-        try {
-            UserAccount user = getAuthenticatedUser(principal);
-            return ResponseEntity.ok(cartService.addToCart(user, request));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+    public ResponseEntity<CartDTO> addToCart(@Valid @RequestBody AddToCartRequest req) {
+        UserAccount user = getCurrentUser();
+        return ResponseEntity.ok(cartService.addToCart(user, req));
     }
 
     @PutMapping("/item/{cartItemId}")
     public ResponseEntity<CartDTO> updateQuantity(
-            Principal principal,
             @PathVariable Long cartItemId,
             @RequestParam Integer quantity) {
-        try {
-            UserAccount user = getAuthenticatedUser(principal);
-            return ResponseEntity.ok(cartService.updateQuantity(user, cartItemId, quantity));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+
+        UserAccount user = getCurrentUser();
+        return ResponseEntity.ok(cartService.updateQuantity(user, cartItemId, quantity));
     }
 
     @DeleteMapping("/item/{cartItemId}")
-    public ResponseEntity<CartDTO> removeCartItem(
-            Principal principal,
-            @PathVariable Long cartItemId) {
-        try {
-            UserAccount user = getAuthenticatedUser(principal);
-            return ResponseEntity.ok(cartService.removeCartItem(user, cartItemId));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+    public ResponseEntity<CartDTO> removeCartItem(@PathVariable Long cartItemId) {
+        UserAccount user = getCurrentUser();
+        return ResponseEntity.ok(cartService.removeCartItem(user, cartItemId));
     }
 }
