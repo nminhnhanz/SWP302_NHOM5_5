@@ -1,6 +1,7 @@
 package com.fpt.glasseshop.controller;
 
 import com.fpt.glasseshop.entity.ProductVariant;
+import com.fpt.glasseshop.entity.StockResponse;
 import com.fpt.glasseshop.entity.dto.ApiResponse;
 import com.fpt.glasseshop.entity.dto.ProductVariantDTO;
 import com.fpt.glasseshop.entity.dto.request.VariantRequest;
@@ -35,6 +36,43 @@ public class ProductVariantController {
         ProductVariantDTO variant =
                 productVariantService.updateProductVariant(request, variantId);
 
+        return ResponseEntity.ok(ApiResponse.success("Product Variant updated successfully", variant));
+    }
+//    @PutMapping("/variants/decrease/{variantId}")
+//    public ResponseEntity<ApiResponse<ProductVariant>> decreaseQuantityProductVariant(
+//            @PathVariable Long variantId,
+//            @RequestParam Integer amount,
+//            @RequestBody VariantRequest request
+//    ) {
+//
+//        productVariantService.decreaseStockProductVariant(variantId, amount);
+//        return ResponseEntity.ok(ApiResponse.success("Product Variant decreased successfully", productVariantService.getProductVariantById(variantId)));
+//    }
+    @PostMapping("/variants/getStock/{variantId}")
+    public ResponseEntity<ApiResponse<StockResponse>> getStockProductVariant(@PathVariable Long variantId) {
+        ProductVariant variant =
+                productVariantService.getProductVariantById(variantId);
+
+        StockResponse response = new StockResponse(
+                variant.getVariantId(),
+                variant.getStockQuantity()
+        );
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Get stock successfully", response)
+        );
+
+    }
+    @PutMapping("/variants/updateStock/{variantId}")
+    public ResponseEntity<ApiResponse<ProductVariantDTO>> updateQuantityProductVariant(
+            @PathVariable Long variantId,
+            @RequestParam Integer quantity,
+            @RequestBody VariantRequest request
+    ) {
+        ProductVariantDTO variant =
+                productVariantService.updateProductVariant(request, variantId);
+        variant.setStockQuantity(quantity);
+        productVariantService.updateStockProductVariant(variantId, quantity);
         return ResponseEntity.ok(ApiResponse.success("Product Variant updated successfully", variant));
     }
 
