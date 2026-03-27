@@ -30,6 +30,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         return proVariantExists;
     }
 
+
     @Override
     public ProductVariantDTO createProductVariant(VariantRequest request, Long productId) throws BadRequestException {
         Product pro = productRepo.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product not found with id " + productId));
@@ -91,12 +92,25 @@ public class ProductVariantServiceImpl implements ProductVariantService {
     }
 
     @Override
-    public ProductVariant updateStockProductVariant(Long productVariantId, Integer stockQty) {
-        ProductVariant proVariantExists = getProductVariantById(productVariantId);
-        if(proVariantExists != null){
-            proVariantExists.setStockQuantity(stockQty);
+    public ProductVariantDTO decreaseStockProductVariant(Long productVariantId, Integer amount) {
+
+        if (amount == null || amount <= 0) {
+            throw new IllegalArgumentException("Amount must be greater than 0");
         }
-        return productVariantRepo.save(proVariantExists);
+
+        ProductVariant variant = getProductVariantById(productVariantId);
+
+        if (variant.getStockQuantity() < amount) {
+            throw new RuntimeException("Not enough stock");
+        }
+
+        variant.setStockQuantity(variant.getStockQuantity() - amount);
+        // Optional but recommended
+        if (variant.getStockQuantity() == 0) {
+            variant.setActive(false);
+        }
+
+        return mapToDTO(productVariantRepo.save(variant));
     }
 
     @Override
@@ -130,6 +144,22 @@ public class ProductVariantServiceImpl implements ProductVariantService {
                 .status(variant.getStatus())
                 .active(variant.getActive())
                 .build();
+    }
+    @Override
+    public ProductVariantDTO updateStockProductVariant(Long productVariantId, Integer stockQty) {
+        if (stockQty == null || stockQty < 0) {
+            throw new IllegalArgumentException("Stock must be >= 0");
+        }
+
+        ProductVariant variant = getProductVariantById(productVariantId);
+        variant.setStockQuantity(stockQty);
+
+        // Optional: auto disable when out of stock
+        if (stockQty == 0) {
+            variant.setActive(false);
+        }
+
+        return mapToDTO(productVariantRepo.save(variant));
     }
 
 }

@@ -21,10 +21,13 @@ public interface ProductVariantService {
     ProductVariantDTO updateProductVariant(VariantRequest productVariant, Long productVariantId );
 
     //Update riêng stock của variant (hết hàng, nhập kho, sai số)
-    ProductVariant updateStockProductVariant(Long productVariantId, Integer stockQty );
+    ProductVariantDTO updateStockProductVariant(Long productVariantId, Integer stockQty );
 
     //Hết kho ẩn variant khỏi người dùng
     ProductVariantDTO updateVarianStatus(Long productVariantId, Boolean active) throws BadRequestException;
+
+
+    ProductVariantDTO decreaseStockProductVariant(Long productVariantId, Integer amount);
 
     //Delete variant
     void deleteProductVariant(Long productVariantId);
