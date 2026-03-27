@@ -74,6 +74,8 @@ public class OrderItem {
     private BigDecimal cylRight;
     private Integer axisLeft;
     private Integer axisRight;
+    private BigDecimal addLeft;
+    private BigDecimal addRight;
     private BigDecimal pd;
 
     @OneToOne(mappedBy = "orderItem", cascade = CascadeType.ALL)

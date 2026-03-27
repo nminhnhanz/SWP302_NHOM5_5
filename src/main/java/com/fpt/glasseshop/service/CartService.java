@@ -12,6 +12,7 @@ import com.fpt.glasseshop.exception.ResourceNotFoundException;
 import com.fpt.glasseshop.repository.CartItemRepository;
 import com.fpt.glasseshop.repository.CartRepository;
 import com.fpt.glasseshop.repository.LensOptionRepository;
+import com.fpt.glasseshop.repository.PrescriptionRepository;
 import com.fpt.glasseshop.repository.ProductVariantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class CartService {
     private final CartItemRepository cartItemRepository;
     private final ProductVariantRepository productVariantRepository;
     private final LensOptionRepository lensOptionRepository;
+    private final PrescriptionRepository prescriptionRepository;
 
     @Transactional
     public CartDTO getCart(UserAccount user) {
@@ -95,16 +97,42 @@ public class CartService {
                     .build();
 
             if (Boolean.TRUE.equals(request.getIsLens())) {
+                java.math.BigDecimal sphL = request.getSphLeft();
+                java.math.BigDecimal sphR = request.getSphRight();
+                java.math.BigDecimal cylL = request.getCylLeft();
+                java.math.BigDecimal cylR = request.getCylRight();
+                Integer axisL = request.getAxisLeft();
+                Integer axisR = request.getAxisRight();
+                java.math.BigDecimal addL = request.getAddLeft();
+                java.math.BigDecimal addR = request.getAddRight();
+                java.math.BigDecimal pdVal = request.getPd();
+
+                if (request.getPrescriptionId() != null) {
+                    com.fpt.glasseshop.entity.Prescription savedP = prescriptionRepository.findById(request.getPrescriptionId())
+                            .orElseThrow(() -> new ResourceNotFoundException("Prescription not found"));
+                    sphL = savedP.getSphLeft();
+                    sphR = savedP.getSphRight();
+                    cylL = savedP.getCylLeft();
+                    cylR = savedP.getCylRight();
+                    axisL = savedP.getAxisLeft();
+                    axisR = savedP.getAxisRight();
+                    addL = savedP.getAddLeft();
+                    addR = savedP.getAddRight();
+                    pdVal = savedP.getPd();
+                }
+
                 com.fpt.glasseshop.entity.Prescription prescription = com.fpt.glasseshop.entity.Prescription.builder()
-                        .sphLeft(request.getSphLeft())
-                        .sphRight(request.getSphRight())
-                        .cylLeft(request.getCylLeft())
-                        .cylRight(request.getCylRight())
-                        .axisLeft(request.getAxisLeft())
-                        .axisRight(request.getAxisRight())
-                        .pd(request.getPd())
-                        .status(false) // false = pending
-                        .cartItem(newItem) // linking to cartItem
+                        .sphLeft(sphL)
+                        .sphRight(sphR)
+                        .cylLeft(cylL)
+                        .cylRight(cylR)
+                        .axisLeft(axisL)
+                        .axisRight(axisR)
+                        .addLeft(addL)
+                        .addRight(addR)
+                        .pd(pdVal)
+                        .status(false) // pending approval
+                        .cartItem(newItem)
                         .build();
                 newItem.setPrescription(prescription);
             }

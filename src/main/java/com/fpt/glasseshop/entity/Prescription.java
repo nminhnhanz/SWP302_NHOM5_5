@@ -30,12 +30,20 @@ public class Prescription {
     @JoinColumn(name = "cart_item_id", unique = true)
     private CartItem cartItem;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private UserAccount user;
+    
+    private String name;
+
     private BigDecimal sphLeft;
     private BigDecimal sphRight;
     private BigDecimal cylLeft;
     private BigDecimal cylRight;
     private Integer axisLeft;
     private Integer axisRight;
+    private BigDecimal addLeft;
+    private BigDecimal addRight;
     private BigDecimal pd;
     private String doctorName;
     private LocalDate expirationDate;

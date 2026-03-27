@@ -35,6 +35,9 @@ public class AddToCartRequest {
     @Schema(description = "Whether it is a preorder", example = "false")
     private Boolean isPreorder;
 
+    @Schema(description = "ID of the saved prescription (optional)", example = "1")
+    private Long prescriptionId;
+
     // Prescription fields
     private java.math.BigDecimal sphLeft;
     private java.math.BigDecimal sphRight;
@@ -42,5 +45,7 @@ public class AddToCartRequest {
     private java.math.BigDecimal cylRight;
     private Integer axisLeft;
     private Integer axisRight;
+    private java.math.BigDecimal addLeft;
+    private java.math.BigDecimal addRight;
     private java.math.BigDecimal pd;
 }
