@@ -1,5 +1,6 @@
 package com.fpt.glasseshop.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,6 +30,7 @@ public class UserAccount {
 
     private String role;
 
+    @JsonIgnore
     private String passwordHash;
 
     private String accountStatus;

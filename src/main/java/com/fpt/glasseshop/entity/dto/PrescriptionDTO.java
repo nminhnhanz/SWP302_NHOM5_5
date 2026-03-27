@@ -17,6 +17,8 @@ import java.time.LocalDateTime;
 public class PrescriptionDTO {
     private Long prescriptionId;
     private Long orderItemId;
+    
+    private String name;
 
     @NotNull(message = "Left eye SPH is required")
     private BigDecimal sphLeft;
@@ -28,6 +30,8 @@ public class PrescriptionDTO {
     private BigDecimal cylRight;
     private Integer axisLeft;
     private Integer axisRight;
+    private BigDecimal addLeft;
+    private BigDecimal addRight;
 
     @NotNull(message = "PD (Pupillary Distance) is required")
     private BigDecimal pd;

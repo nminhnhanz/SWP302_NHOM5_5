@@ -1,5 +1,6 @@
 package com.fpt.glasseshop.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,6 +20,7 @@ public class OrderItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long orderItemId;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "order_id")
     private Order order;
@@ -72,6 +74,8 @@ public class OrderItem {
     private BigDecimal cylRight;
     private Integer axisLeft;
     private Integer axisRight;
+    private BigDecimal addLeft;
+    private BigDecimal addRight;
     private BigDecimal pd;
 
     @OneToOne(mappedBy = "orderItem", cascade = CascadeType.ALL)
