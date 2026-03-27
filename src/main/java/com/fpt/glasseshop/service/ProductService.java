@@ -8,6 +8,8 @@ import com.fpt.glasseshop.repository.ProductRepository;
 import com.fpt.glasseshop.repository.ProductVariantRepository;
 import com.fpt.glasseshop.repository.OrderItemRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,7 +18,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ProductService {
-
     private final ProductRepository productRepository;
     private final ProductVariantRepository productVariantRepository;
     private final OrderItemRepository orderItemRepository;
@@ -29,7 +30,21 @@ public class ProductService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
+    //update
+    public ProductDTO updateProduct(Long id, ProductDTO productDTO) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
 
+        // update only fields you want
+        product.setName(productDTO.getName());
+        product.setBrand(productDTO.getBrand());
+        product.setDescription(productDTO.getDescription());
+        product.setProductType(productDTO.getProductType());
+        product.setPrescriptionSupported(productDTO.isPrescriptionSupported());
+        product.setPrice(productDTO.getPrice());
+
+        return convertToDTO(productRepository.save(product));
+    }
     public List<ProductDTO> getAllProductsForUser() {
         return productRepository.findAll()
                 .stream()

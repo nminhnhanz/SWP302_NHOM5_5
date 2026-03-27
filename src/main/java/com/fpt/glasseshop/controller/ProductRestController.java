@@ -45,7 +45,22 @@ public class ProductRestController {
             return ResponseEntity.ok(
                     ApiResponse.success("Products retrieved successfully", products));
         }
+        //================== UPDATE PRODUCT =================
+        @PutMapping("/{id}")
+        public ResponseEntity<ApiResponse<ProductDTO>> updateProduct(
+                @Parameter(description = "Product ID", example = "1")
+                @PathVariable Long id,
 
+                @RequestBody ProductDTO productDTO) {
+
+                productDTO.setProductId(id);
+
+                ProductDTO updatedProduct = productService.updateProduct(id,productDTO);
+
+                return ResponseEntity.ok(
+                        ApiResponse.success("Product updated successfully", updatedProduct)
+                );
+        }
         // ================= GET PRODUCT BY ID =================
         @GetMapping("/{id}")
         @Operation(summary = "Get product by ID", description = "Retrieves a single product by its unique identifier")
