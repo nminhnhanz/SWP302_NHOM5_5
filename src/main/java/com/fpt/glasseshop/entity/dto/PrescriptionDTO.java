@@ -39,5 +39,6 @@ public class PrescriptionDTO {
     private String doctorName;
     private LocalDate expirationDate;
     private Boolean status;
+    private String adminNote;
     private LocalDateTime createdAt;
 }

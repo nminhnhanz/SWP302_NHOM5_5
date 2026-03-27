@@ -50,6 +50,9 @@ public class Prescription {
     
     // status = false (pending), status = true (approved)
     private Boolean status;
+    
+    @Column(name = "admin_note", columnDefinition = "TEXT")
+    private String adminNote;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

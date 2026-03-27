@@ -65,6 +65,26 @@ public class OrderItemDTO {
     @Schema(description = "Whether it is a preorder", example = "false")
     private Boolean isPreorder;
 
+    // Prescription Data (Flat parameters from OrderItem entity)
+    @Schema(description = "Spherical (Left)", example = "-1.50")
+    private BigDecimal sphLeft;
+    @Schema(description = "Spherical (Right)", example = "-1.75")
+    private BigDecimal sphRight;
+    @Schema(description = "Cylindrical (Left)", example = "-0.25")
+    private BigDecimal cylLeft;
+    @Schema(description = "Cylindrical (Right)", example = "-0.50")
+    private BigDecimal cylRight;
+    @Schema(description = "Axis (Left)", example = "10")
+    private Integer axisLeft;
+    @Schema(description = "Axis (Right)", example = "15")
+    private Integer axisRight;
+    @Schema(description = "Addition (Left)", example = "1.00")
+    private BigDecimal addLeft;
+    @Schema(description = "Addition (Right)", example = "1.00")
+    private BigDecimal addRight;
+    @Schema(description = "Pupillary Distance", example = "62.00")
+    private BigDecimal pd;
+
     @Schema(description = "Prescription details if applicable")
     private PrescriptionDTO prescription;
 }
