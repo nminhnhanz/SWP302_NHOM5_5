@@ -62,6 +62,9 @@ public class OrderItemDTO {
     @Schema(description = "Type of item (PRESCRIPTION, PRE_ORDER, IN_STOCK)", example = "IN_STOCK")
     private String itemType;
 
+    @Schema(description = "Whether it is a preorder", example = "false")
+    private Boolean isPreorder;
+
     @Schema(description = "Prescription details if applicable")
     private PrescriptionDTO prescription;
 }

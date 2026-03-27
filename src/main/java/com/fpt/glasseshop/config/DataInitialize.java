@@ -5,6 +5,7 @@ import com.fpt.glasseshop.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.jdbc.core.JdbcTemplate;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
@@ -26,10 +27,20 @@ public class DataInitialize implements CommandLineRunner {
         private final AddressRepository addressRepository;
         private final PrescriptionRepository prescriptionRepository;
         private final PreOrderRepository preOrderRepository;
+        private final JdbcTemplate jdbcTemplate;
         private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
         @Override
         public void run(String... args) throws Exception {
+                log.info("Ensuring database schema is up-to-date...");
+                try {
+                    // Tự động thêm cột is_preorder vào bảng order_item nếu chưa có (H2 or MySQL syntax)
+                    jdbcTemplate.execute("ALTER TABLE order_item ADD COLUMN IF NOT EXISTS is_preorder BOOLEAN DEFAULT FALSE");
+                    log.info("Database schema check: 'is_preorder' column verified.");
+                } catch (Exception e) {
+                    log.warn("Could not add 'is_preorder' column automatically (it might already exist). Detail: {}", e.getMessage());
+                }
+
                 log.info("Checking data initialization status...");
                 if (userAccountRepository.count() == 0) {
                         log.info("Seeding users...");

@@ -84,11 +84,14 @@ public class OrderItem {
     @OneToOne(mappedBy = "orderItem", cascade = CascadeType.ALL)
     private PreOrder preOrder;
 
+    @Column(name = "is_preorder")
+    private Boolean isPreorder;
+
     public String getItemType() {
         if (prescription != null || sphLeft != null || sphRight != null ||
                 cylLeft != null || cylRight != null || axisLeft != null || axisRight != null || pd != null)
             return "PRESCRIPTION";
-        if (preOrder != null)
+        if (Boolean.TRUE.equals(isPreorder) || preOrder != null)
             return "PRE_ORDER";
         return "IN_STOCK";
     }

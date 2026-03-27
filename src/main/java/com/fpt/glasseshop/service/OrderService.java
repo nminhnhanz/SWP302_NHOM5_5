@@ -142,10 +142,12 @@ public class OrderService {
                 throw new IllegalArgumentException("Invalid quantity for cart item");
             }
 
-            // Atomic Stock Validation & Deduction
-            int updatedRows = productVariantRepository.decreaseStock(cartItem.getVariant().getVariantId(), cartItem.getQuantity());
-            if (updatedRows == 0) {
-                throw new IllegalArgumentException("Insufficient stock for product: " + (cartItem.getVariant().getProduct() != null ? cartItem.getVariant().getProduct().getName() : "Unknown"));
+            // Atomic Stock Validation & Deduction (Skip for Preorders)
+            if (!Boolean.TRUE.equals(cartItem.getIsPreorder())) {
+                int updatedRows = productVariantRepository.decreaseStock(cartItem.getVariant().getVariantId(), cartItem.getQuantity());
+                if (updatedRows == 0) {
+                    throw new IllegalArgumentException("Insufficient stock for product: " + (cartItem.getVariant().getProduct() != null ? cartItem.getVariant().getProduct().getName() : "Unknown"));
+                }
             }
 
             BigDecimal unitPrice = cartItem.getPrice() != null ? cartItem.getPrice() : BigDecimal.ZERO;
@@ -172,7 +174,8 @@ public class OrderService {
                     .lensCoating(cartItem.getLensOption() != null ? cartItem.getLensOption().getCoating() : null)
                     .quantity(cartItem.getQuantity())
                     .unitPrice(unitPrice)
-                    .fulfillmentType(cartItem.getPrescription() != null ? "PRESCRIPTION" : "IN_STOCK")
+                    .isPreorder(cartItem.getIsPreorder())
+                    .fulfillmentType(cartItem.getPrescription() != null ? "PRESCRIPTION" : (Boolean.TRUE.equals(cartItem.getIsPreorder()) ? "PRE_ORDER" : "IN_STOCK"))
                     .build();
 
             if (cartItem.getPrescription() != null) {
@@ -271,6 +274,7 @@ public class OrderService {
                 .subtotal(item.getUnitPrice().multiply(new java.math.BigDecimal(item.getQuantity())))
                 .fulfillmentType(item.getFulfillmentType())
                 .itemType(item.getItemType())
+                .isPreorder(item.getIsPreorder())
                 .prescription(mapToPrescriptionDTO(item.getPrescription()))
                 .build();
     }
