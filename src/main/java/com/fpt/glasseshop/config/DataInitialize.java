@@ -252,6 +252,145 @@ DataInitialize implements CommandLineRunner {
                                 .build();
                 productVariantRepository.save(kitStandard);
 
+                // Product 4: Kính Wayfarer (Gọng nhựa dày cổ điển)
+                Product wayfarer = Product.builder()
+                        .name("Wayfarer Classic")
+                        .brand("Ray-Ban")
+                        .description("Classic thick plastic frame, suitable for all face shapes.")
+                        .productType(Product.ProductType.FRAME)
+                        .isPrescriptionSupported(true)
+                        .build();
+                productRepository.save(wayfarer);
+
+                ProductVariant wayfarerBlack = ProductVariant.builder()
+                        .product(wayfarer)
+                        .stockQuantity(120)
+                        .frameSize("Medium")
+                        .color("Matte Black")
+                        .material("Acetate")
+                        .imageUrl("https://static.zennioptical.com/production/products/general/20/18/2018621-eyeglasses-angle-view.jpg")
+                        .status("AVAILABLE")
+                        .active(true)
+                        .deleted(false)
+                        .build();
+
+                ProductVariant wayfarerTortoise = ProductVariant.builder()
+                        .product(wayfarer)
+                        .stockQuantity(80)
+                        .frameSize("Medium")
+                        .color("Tortoise")
+                        .material("Acetate")
+                        .imageUrl("https://static.zennioptical.com/production/products/general/20/18/2018625-eyeglasses-angle-view.jpg")
+                        .status("AVAILABLE")
+                        .active(true)
+                        .deleted(false)
+                        .build();
+                productVariantRepository.saveAll(Arrays.asList(wayfarerBlack, wayfarerTortoise));
+
+                // Product 5: Kính Clubmaster (Nửa viền thanh lịch)
+                Product clubmaster = Product.builder()
+                        .name("Clubmaster Elegant")
+                        .brand("Armani")
+                        .description("Elegant half-rim glasses with a professional style.")
+                        .productType(Product.ProductType.FRAME)
+                        .isPrescriptionSupported(true)
+                        .build();
+                productRepository.save(clubmaster);
+
+                ProductVariant clubmasterSilver = ProductVariant.builder()
+                        .product(clubmaster)
+                        .stockQuantity(60)
+                        .frameSize("Medium")
+                        .color("Black/Silver")
+                        .material("Mixed")
+                        .imageUrl("https://static.zennioptical.com/production/products/general/19/54/195421-eyeglasses-angle-view.jpg")
+                        .status("AVAILABLE")
+                        .active(true)
+                        .deleted(false)
+                        .build();
+                productVariantRepository.save(clubmasterSilver);
+
+                // Product 6: Kính tròn Vintage (Phong cách Hàn Quốc)
+                Product vintageRound = Product.builder()
+                        .name("Vintage Round Metal")
+                        .brand("Vogue")
+                        .description("Lightweight retro metal frame, Korean style.")
+                        .productType(Product.ProductType.FRAME)
+                        .isPrescriptionSupported(true)
+                        .build();
+                productRepository.save(vintageRound);
+
+                ProductVariant roundGold = ProductVariant.builder()
+                        .product(vintageRound)
+                        .stockQuantity(150)
+                        .frameSize("Small")
+                        .color("Rose Gold")
+                        .material("Titanium")
+                        .imageUrl("https://static.zennioptical.com/production/products/general/11/25/1125214-eyeglasses-angle-view.jpg")
+                        .status("AVAILABLE")
+                        .active(true)
+                        .deleted(false)
+                        .build();
+
+                ProductVariant roundSilver = ProductVariant.builder()
+                        .product(vintageRound)
+                        .stockQuantity(100)
+                        .frameSize("Small")
+                        .color("Silver")
+                        .material("Titanium")
+                        .imageUrl("https://static.zennioptical.com/production/products/general/15/78/157811-eyeglasses-angle-view.jpg")
+                        .status("AVAILABLE")
+                        .active(true)
+                        .deleted(false)
+                        .build();
+                productVariantRepository.saveAll(Arrays.asList(roundGold, roundSilver));
+
+                // Product 7: Kính Cat-eye (Mắt mèo cho nữ)
+                Product catEye = Product.builder()
+                        .name("Cat-Eye Glamour")
+                        .brand("Prada")
+                        .description("Trendy cat-eye glasses that flatter feminine facial features.")
+                        .productType(Product.ProductType.FRAME)
+                        .isPrescriptionSupported(true)
+                        .build();
+                productRepository.save(catEye);
+
+                ProductVariant catEyeRed = ProductVariant.builder()
+                        .product(catEye)
+                        .stockQuantity(40)
+                        .frameSize("Medium")
+                        .color("Burgundy")
+                        .material("Acetate")
+                        .imageUrl("https://static.zennioptical.com/production/products/general/20/20/2020118-eyeglasses-angle-view.jpg")
+                        .status("AVAILABLE")
+                        .active(true)
+                        .deleted(false)
+                        .build();
+                productVariantRepository.save(catEyeRed);
+
+                // Product 8: Kính thể thao (Bản to ôm mặt)
+                Product sportGlasses = Product.builder()
+                        .name("Pro Sport Wrap")
+                        .brand("Oakley")
+                        .description("Wrap-around sports glasses, anti-slip for active movements.")
+                        .productType(Product.ProductType.FRAME)
+                        .isPrescriptionSupported(true)
+                        .build();
+                productRepository.save(sportGlasses);
+
+                ProductVariant sportBlue = ProductVariant.builder()
+                        .product(sportGlasses)
+                        .stockQuantity(70)
+                        .frameSize("Large")
+                        .color("Blue/Black")
+                        .material("TR90")
+                        .imageUrl("https://static.zennioptical.com/production/products/general/70/88/708816-eyeglasses-angle-view.jpg")
+                        .status("AVAILABLE")
+                        .active(true)
+                        .deleted(false)
+                        .build();
+                productVariantRepository.save(sportBlue);
+
         }
 
         private void seedLensOptions() {
