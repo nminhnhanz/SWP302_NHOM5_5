@@ -49,4 +49,18 @@ public class CartItemDTO {
 
     @Schema(description = "Total price for this item line (unitPrice * quantity)", example = "180.00")
     private BigDecimal subtotal;
+
+    // Prescription Data for Manual Entry
+    private BigDecimal sphLeft;
+    private BigDecimal sphRight;
+    private BigDecimal cylLeft;
+    private BigDecimal cylRight;
+    private Integer axisLeft;
+    private Integer axisRight;
+    private BigDecimal addLeft;
+    private BigDecimal addRight;
+    private BigDecimal pd;
+
+    @Schema(description = "Prescription details if applicable")
+    private PrescriptionDTO prescription;
 }

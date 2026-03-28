@@ -232,6 +232,16 @@ public class CartService {
                         .quantity(item.getQuantity())
                         .unitPrice(unitPrice)
                         .subtotal(subtotal)
+                        // Mapping manual prescription fields to CartItemDTO
+                        .sphLeft(item.getPrescription() != null ? item.getPrescription().getSphLeft() : null)
+                        .sphRight(item.getPrescription() != null ? item.getPrescription().getSphRight() : null)
+                        .cylLeft(item.getPrescription() != null ? item.getPrescription().getCylLeft() : null)
+                        .cylRight(item.getPrescription() != null ? item.getPrescription().getCylRight() : null)
+                        .axisLeft(item.getPrescription() != null ? item.getPrescription().getAxisLeft() : null)
+                        .axisRight(item.getPrescription() != null ? item.getPrescription().getAxisRight() : null)
+                        .addLeft(item.getPrescription() != null ? item.getPrescription().getAddLeft() : null)
+                        .addRight(item.getPrescription() != null ? item.getPrescription().getAddRight() : null)
+                        .pd(item.getPrescription() != null ? item.getPrescription().getPd() : null)
                         .build();
 
                 itemDTOs.add(itemDTO);

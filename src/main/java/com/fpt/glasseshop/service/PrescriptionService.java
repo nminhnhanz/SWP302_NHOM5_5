@@ -59,6 +59,17 @@ public class PrescriptionService {
         prescriptionRepository.delete(p);
     }
 
+    @Transactional
+    public PrescriptionDTO updatePrescriptionStatus(Long prescriptionId, Boolean status, String adminNote) {
+        Prescription p = prescriptionRepository.findById(prescriptionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Prescription not found with id: " + prescriptionId));
+        
+        p.setStatus(status);
+        p.setAdminNote(adminNote);
+        
+        return convertToDTO(prescriptionRepository.save(p));
+    }
+
     private PrescriptionDTO convertToDTO(Prescription p) {
         return PrescriptionDTO.builder()
                 .prescriptionId(p.getPrescriptionId())
@@ -76,6 +87,7 @@ public class PrescriptionService {
                 .expirationDate(p.getExpirationDate())
                 .status(p.getStatus())
                 .createdAt(p.getCreatedAt())
+                .adminNote(p.getAdminNote())
                 .build();
     }
 }

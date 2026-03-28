@@ -175,7 +175,17 @@ public class OrderService {
                     .quantity(cartItem.getQuantity())
                     .unitPrice(unitPrice)
                     .isPreorder(cartItem.getIsPreorder())
-                    .fulfillmentType(cartItem.getPrescription() != null ? "PRESCRIPTION" : (Boolean.TRUE.equals(cartItem.getIsPreorder()) ? "PRE_ORDER" : "IN_STOCK"))
+                    .fulfillmentType(cartItem.getPrescription() != null || cartItem.getIsLens() == Boolean.TRUE ? "PRESCRIPTION" : (Boolean.TRUE.equals(cartItem.getIsPreorder()) ? "PRE_ORDER" : "IN_STOCK"))
+                    // Copy manual entry prescription values if they exist in CartItem's linked prescription
+                    .sphLeft(cartItem.getPrescription() != null ? cartItem.getPrescription().getSphLeft() : null)
+                    .sphRight(cartItem.getPrescription() != null ? cartItem.getPrescription().getSphRight() : null)
+                    .cylLeft(cartItem.getPrescription() != null ? cartItem.getPrescription().getCylLeft() : null)
+                    .cylRight(cartItem.getPrescription() != null ? cartItem.getPrescription().getCylRight() : null)
+                    .axisLeft(cartItem.getPrescription() != null ? cartItem.getPrescription().getAxisLeft() : null)
+                    .axisRight(cartItem.getPrescription() != null ? cartItem.getPrescription().getAxisRight() : null)
+                    .addLeft(cartItem.getPrescription() != null ? cartItem.getPrescription().getAddLeft() : null)
+                    .addRight(cartItem.getPrescription() != null ? cartItem.getPrescription().getAddRight() : null)
+                    .pd(cartItem.getPrescription() != null ? cartItem.getPrescription().getPd() : null)
                     .build();
 
             if (cartItem.getPrescription() != null) {
@@ -275,6 +285,16 @@ public class OrderService {
                 .fulfillmentType(item.getFulfillmentType())
                 .itemType(item.getItemType())
                 .isPreorder(item.getIsPreorder())
+                // Populating manual prescription entry data in DTO
+                .sphLeft(item.getSphLeft())
+                .sphRight(item.getSphRight())
+                .cylLeft(item.getCylLeft())
+                .cylRight(item.getCylRight())
+                .axisLeft(item.getAxisLeft())
+                .axisRight(item.getAxisRight())
+                .addLeft(item.getAddLeft())
+                .addRight(item.getAddRight())
+                .pd(item.getPd())
                 .prescription(mapToPrescriptionDTO(item.getPrescription()))
                 .build();
     }
@@ -295,6 +315,7 @@ public class OrderService {
                 .doctorName(p.getDoctorName())
                 .expirationDate(p.getExpirationDate())
                 .status(p.getStatus())
+                .adminNote(p.getAdminNote())
                 .createdAt(p.getCreatedAt())
                 .build();
     }

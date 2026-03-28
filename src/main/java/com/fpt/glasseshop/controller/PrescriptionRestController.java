@@ -43,4 +43,12 @@ public class PrescriptionRestController {
         prescriptionService.deletePrescription(user, id);
         return ResponseEntity.ok().build();
     }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<PrescriptionDTO> updateStatus(
+            @PathVariable Long id,
+            @RequestParam Boolean status,
+            @RequestParam(required = false) String note) {
+        return ResponseEntity.ok(prescriptionService.updatePrescriptionStatus(id, status, note));
+    }
 }
