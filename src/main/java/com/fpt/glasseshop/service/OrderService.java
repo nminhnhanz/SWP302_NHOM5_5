@@ -89,6 +89,28 @@ public class OrderService {
         
         return convertToDTO(orderRepository.save(order));
     }
+    @Transactional
+    public OrderDTO updatePaymentOrderStatus(Long orderId, String newStatus) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+        java.util.List<String> validStatuses = java.util.Arrays.asList("UNPAID", "PAID");
+        if (!validStatuses.contains(newStatus)) {
+            throw new IllegalArgumentException("Invalid payment status: " + newStatus);
+        }
+
+        order.setPaymentStatus(newStatus);
+
+        // Check if canceled to restore stock
+        if ("CANCELED".equals(newStatus)) {
+            for (OrderItem item : order.getOrderItems()) {
+                if (item.getVariantId() != null && item.getQuantity() != null) {
+                    productVariantRepository.decreaseStock(item.getVariantId(), -item.getQuantity()); // negative decrease = increase
+                }
+            }
+        }
+
+        return convertToDTO(orderRepository.save(order));
+    }
 
     public void deleteOrder(Long id) {
         if (!orderRepository.existsById(id)) {
