@@ -190,6 +190,13 @@ public class ReturnRequestService {
                 .anyMatch(a -> role.equals(a.getAuthority()));
     }
 
+    public ReturnRequestResponseDTO getByOrderItemId(Long orderItemId) {
+        ReturnRequest request = returnRequestRepo.findByOrderItemOrderItemId(orderItemId)
+                .orElseThrow(() -> new RuntimeException("Return request not found"));
+
+        return mapToDTO(request);
+    }
+
     public ReturnRequestResponseDTO mapToDTO(ReturnRequest request) {
         return ReturnRequestResponseDTO.builder()
                 .requestId(request.getRequestId())
