@@ -87,6 +87,7 @@ public class PrescriptionService {
                 .expirationDate(p.getExpirationDate())
                 .status(p.getStatus())
                 .createdAt(p.getCreatedAt())
+                .adminNote(p.getAdminNote())
                 .build();
     }
 }

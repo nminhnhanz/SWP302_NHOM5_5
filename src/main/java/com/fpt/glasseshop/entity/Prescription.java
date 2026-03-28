@@ -49,10 +49,12 @@ public class Prescription {
     private LocalDate expirationDate;
     
     // status = false (pending), status = true (approved)
-    private Boolean status;
+    @Builder.Default
+    private Boolean status = false;
     
+    @Builder.Default
     @Column(name = "admin_note", columnDefinition = "TEXT")
-    private String adminNote;
+    private String adminNote = "";
 
     @CreationTimestamp
     private LocalDateTime createdAt;
