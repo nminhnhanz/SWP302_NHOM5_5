@@ -22,7 +22,7 @@ public class ReturnRequest {
 
     @ManyToOne
     @JoinColumn(name = "order_id")
-    private Order order;
+    private OrderItem orderItem;
 
     @Column(columnDefinition = "TEXT")
     private String reason;
