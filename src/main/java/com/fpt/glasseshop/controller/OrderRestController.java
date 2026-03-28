@@ -127,7 +127,24 @@ public class OrderRestController {
                     .body(ApiResponse.error(e.getMessage()));
         }
     }
+    @PatchMapping("/{id}/paymentStatus")
+    public ResponseEntity<ApiResponse<OrderDTO>> paymentOrderStatus(
+            @PathVariable Long id,
+            @RequestParam String status) {
 
+        try {
+            OrderDTO updatedOrder = orderService.updatePaymentOrderStatus(id, status);
+            return ResponseEntity.ok(ApiResponse.success("Order payment status updated", updatedOrder));
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(e.getMessage()));
+
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.error(e.getMessage()));
+        }
+    }
     @GetMapping("/customers/count")
     public ResponseEntity<ApiResponse<Long>> getTotalCustomers() {
         return ResponseEntity.ok(ApiResponse.success(
