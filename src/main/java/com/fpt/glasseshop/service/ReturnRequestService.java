@@ -1,10 +1,12 @@
 package com.fpt.glasseshop.service;
 
 import com.fpt.glasseshop.entity.Order;
+import com.fpt.glasseshop.entity.OrderItem;
 import com.fpt.glasseshop.entity.ReturnRequest;
 import com.fpt.glasseshop.entity.UserAccount;
 import com.fpt.glasseshop.entity.dto.ReturnRequestDTO;
 import com.fpt.glasseshop.entity.dto.ReturnRequestResponseDTO;
+import com.fpt.glasseshop.repository.OrderItemRepository;
 import com.fpt.glasseshop.repository.OrderRepository;
 import com.fpt.glasseshop.repository.ReturnRequestRepository;
 import com.fpt.glasseshop.repository.UserAccountRepository;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -25,10 +28,13 @@ public class ReturnRequestService {
     private final ReturnRequestRepository returnRequestRepo;
     private final OrderRepository orderRepository;
     private final UserAccountRepository userAccountRepository;
+    private final OrderItemRepository orderItemRepository;
 
     private UserAccount getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-
+        String role = SecurityContextHolder.getContext().getAuthentication().getAuthorities().toString();
+        System.out.println("EMAIL FROM SECURITY CONTEXT = " + email);
+        System.out.println("TOKEN ROLE = " + role);
         if (email == null) {
             throw new AccessDeniedException("User is not authenticated");
         }
@@ -41,9 +47,9 @@ public class ReturnRequestService {
 
         UserAccount currentUser = getCurrentUser();
 
-        Order order = orderRepository.findById(dto.getOrderId())
+        OrderItem orderItem = orderItemRepository.findById(dto.getOrderItemId())
                 .orElseThrow(() -> new RuntimeException("Order not found"));
-
+        Order order = orderItem.getOrder();
         // 1. Check ownership
         if (!order.getUser().getUserId().equals(currentUser.getUserId())) {
             throw new BadRequestException("You are not allowed to return this order");
@@ -60,7 +66,7 @@ public class ReturnRequestService {
         }
 
         // 4. Check duplicate
-        if (returnRequestRepo.existsByOrderOrderId(order.getOrderId())) {
+        if (returnRequestRepo.existsByOrderItemOrderItemId(order.getOrderId())) {
             throw new BadRequestException("Return request already exists");
         }
 
@@ -76,7 +82,7 @@ public class ReturnRequestService {
         }
 
         ReturnRequest request = ReturnRequest.builder()
-                .order(order)
+                .orderItem(orderItem)
                 .reason(dto.getReason())
                 .description(dto.getDescription())
                 .imageUrl(dto.getImageUrl())
@@ -88,6 +94,12 @@ public class ReturnRequestService {
         return mapToDTO(saved);
     }
 
+    public List<ReturnRequestResponseDTO> getAll() {
+        return returnRequestRepo.findAll()
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
 
     @Transactional
     public ReturnRequestResponseDTO updateStatus(Long id, ReturnRequest.ReturnStatus newStatus) {
@@ -105,14 +117,14 @@ public class ReturnRequestService {
             throw new IllegalArgumentException("Return request is already in status: " + newStatus);
         }
 
-        // 🔥 Check flow trước
+        //  Check flow
         if (!isValidTransition(currentStatus, newStatus)) {
             throw new IllegalArgumentException(
                     "Cannot change return request status from " + currentStatus + " to " + newStatus
             );
         }
 
-        // 🔥 Check role
+        //  Check role
         validateRolePermission(currentStatus, newStatus);
 
         request.setStatus(newStatus);
@@ -181,7 +193,8 @@ public class ReturnRequestService {
     public ReturnRequestResponseDTO mapToDTO(ReturnRequest request) {
         return ReturnRequestResponseDTO.builder()
                 .requestId(request.getRequestId())
-                .orderId(request.getOrder().getOrderId())
+                .orderId(request.getOrderItem().getOrderItemId())
+                .orderItemId(request.getOrderItem().getOrderItemId())
                 .reason(request.getReason())
                 .description(request.getDescription())
                 .imageUrl(request.getImageUrl())

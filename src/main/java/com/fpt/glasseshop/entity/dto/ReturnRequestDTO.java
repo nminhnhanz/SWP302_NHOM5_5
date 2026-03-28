@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ReturnRequestDTO {
     private Long orderId;
+    private Long orderItemId;
     private String reason;
     private String description;
     private String imageUrl;

@@ -17,6 +17,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/api/return-requests")
@@ -30,6 +32,11 @@ public class ReturnRequestController {
 
         ReturnRequestResponseDTO saved = returnRequestService.createReturnRequest(dto);
         return ResponseEntity.ok(ApiResponse.success("Return request created successfully", saved));
+    }
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<ReturnRequestResponseDTO>>> getAllReturnRequests() {
+        List<ReturnRequestResponseDTO> list = returnRequestService.getAll();
+        return ResponseEntity.ok(ApiResponse.success("Return requests fetched successfully", list));
     }
     //ADMIN UPDATE
     @PatchMapping("/{id}/status")

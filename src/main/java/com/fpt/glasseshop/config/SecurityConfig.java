@@ -97,6 +97,8 @@ public class SecurityConfig {
 
                         .requestMatchers("/operational-staff/**").hasAnyRole("OPERATIONAL_STAFF", "ADMIN")
 
+                        .requestMatchers(HttpMethod.PATCH, "/api/return-requests/**")
+                        .hasAnyRole("ADMIN", "OPERATIONAL_STAFF")
                         .anyRequest().authenticated()
                 )
 
