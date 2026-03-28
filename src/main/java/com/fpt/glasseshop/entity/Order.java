@@ -33,6 +33,9 @@ public class Order {
     @CreationTimestamp
     private LocalDateTime orderDate;
 
+    @Column(name = "delivered_at")
+    private LocalDateTime deliveredAt;
+
     private String status;
     private BigDecimal totalPrice;
 
