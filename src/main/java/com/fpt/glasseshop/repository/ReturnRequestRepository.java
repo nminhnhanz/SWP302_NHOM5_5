@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ReturnRequestRepository extends JpaRepository<ReturnRequest, Long> {
+    boolean existsByOrderOrderId(Long orderId);
 }

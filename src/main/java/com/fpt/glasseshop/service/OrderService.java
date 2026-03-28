@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,6 +82,9 @@ public class OrderService {
                     productVariantRepository.decreaseStock(item.getVariantId(), -item.getQuantity()); // negative decrease = increase
                 }
             }
+        }
+        if ("DELIVERED".equals(newStatus) && order.getDeliveredAt() == null) {
+            order.setDeliveredAt(LocalDateTime.now());
         }
         
         return convertToDTO(orderRepository.save(order));
@@ -327,5 +331,6 @@ public class OrderService {
     public long getTotalOrdersPaid() {
         return orderRepository.countByPaymentStatus("PAID");
     }
+
 
 }
