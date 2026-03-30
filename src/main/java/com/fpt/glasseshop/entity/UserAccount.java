@@ -32,7 +32,7 @@ public class UserAccount {
 
     @JsonIgnore
     private String passwordHash;
-
+    // ACTIVE / LOCKED / INACTIVE
     private String accountStatus;
     
     @CreationTimestamp
