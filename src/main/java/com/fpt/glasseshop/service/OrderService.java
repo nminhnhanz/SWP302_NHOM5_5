@@ -169,7 +169,9 @@ public class OrderService {
             }
 
             // Atomic Stock Validation & Deduction (Skip for Preorders)
-            if (!Boolean.TRUE.equals(cartItem.getIsPreorder())) {
+            boolean isPreorderItem = Boolean.TRUE.equals(cartItem.getIsPreorder()) || Boolean.TRUE.equals(request.getIsPreorder());
+            
+            if (!isPreorderItem) {
                 int updatedRows = productVariantRepository.decreaseStock(cartItem.getVariant().getVariantId(), cartItem.getQuantity());
                 if (updatedRows == 0) {
                     throw new IllegalArgumentException("Insufficient stock for product: " + (cartItem.getVariant().getProduct() != null ? cartItem.getVariant().getProduct().getName() : "Unknown"));
@@ -200,8 +202,8 @@ public class OrderService {
                     .lensCoating(cartItem.getLensOption() != null ? cartItem.getLensOption().getCoating() : null)
                     .quantity(cartItem.getQuantity())
                     .unitPrice(unitPrice)
-                    .isPreorder(cartItem.getIsPreorder())
-                    .fulfillmentType(cartItem.getPrescription() != null || cartItem.getIsLens() == Boolean.TRUE ? "PRESCRIPTION" : (Boolean.TRUE.equals(cartItem.getIsPreorder()) ? "PRE_ORDER" : "IN_STOCK"))
+                    .isPreorder(isPreorderItem)
+                    .fulfillmentType(cartItem.getPrescription() != null || cartItem.getIsLens() == Boolean.TRUE ? "PRESCRIPTION" : (isPreorderItem ? "PRE_ORDER" : "IN_STOCK"))
                     // Copy manual entry prescription values if they exist in CartItem's linked prescription
                     .sphLeft(cartItem.getPrescription() != null ? cartItem.getPrescription().getSphLeft() : null)
                     .sphRight(cartItem.getPrescription() != null ? cartItem.getPrescription().getSphRight() : null)
