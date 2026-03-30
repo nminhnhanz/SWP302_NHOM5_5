@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface ReturnRequestRepository extends JpaRepository<ReturnRequest, Long> {
     boolean existsByOrderItemOrderItemId(Long orderId);
     Optional<ReturnRequest> findByOrderItemOrderItemId(Long orderItemId);
+
 }

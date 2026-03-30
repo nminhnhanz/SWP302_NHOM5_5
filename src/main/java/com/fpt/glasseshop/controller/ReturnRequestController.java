@@ -44,7 +44,7 @@ public class ReturnRequestController {
             @PathVariable Long id,
             @RequestBody UpdateReturnStatusDTO dto) {
 
-        ReturnRequestResponseDTO responseDto = returnRequestService.updateStatus(id, dto.getStatus());
+        ReturnRequestResponseDTO responseDto = returnRequestService.updateStatus(id, dto);
 
         return ResponseEntity.ok(ApiResponse.success("Return request status updated successfully", responseDto));
     }

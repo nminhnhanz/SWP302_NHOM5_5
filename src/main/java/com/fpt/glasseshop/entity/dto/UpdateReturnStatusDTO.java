@@ -6,4 +6,5 @@ import lombok.Data;
 @Data
 public class UpdateReturnStatusDTO {
     private ReturnRequest.ReturnStatus status;
+    private String rejectionReason;
 }
