@@ -21,7 +21,7 @@ public class ReturnRequest {
     private Long requestId;
 
     @ManyToOne
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_item_id")
     private OrderItem orderItem;
 
     @Column(columnDefinition = "TEXT")
@@ -44,5 +44,7 @@ public class ReturnRequest {
     // Ảnh minh chứng
     @Column(columnDefinition = "TEXT")
     private String imageUrl;
+
+    private String rejectionReason; // lý do staff/admin từ chối
 
 }
