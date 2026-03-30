@@ -57,12 +57,24 @@ public class UserAccountService {
         }
         userAccountRepository.deleteById(id);
     }
-    public boolean authenticate(String email, String password) {
-        Optional<UserAccount> user = userAccountRepository.findByEmail(email);
-        if (user.isPresent() && passwordEncoder.matches(password, user.get().getPasswordHash())) {
-            return true;
+    public String authenticate(String email, String password) {
+        Optional<UserAccount> optionalUser = userAccountRepository.findByEmail(email);
+
+        if (optionalUser.isEmpty()) {
+            return "INVALID";
         }
-        return false;
+
+        UserAccount user = optionalUser.get();
+
+        if ("LOCKED".equalsIgnoreCase(user.getAccountStatus())) {
+            return "LOCKED";
+        }
+
+        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+            return "INVALID";
+        }
+
+        return "SUCCESS";
     }
     private UserAccountDTO convertToDTO(UserAccount user) {
         return UserAccountDTO.builder()
@@ -169,4 +181,25 @@ public class UserAccountService {
                 .build();
     }
 
+    public UserAccountDTO lockUser(Long userId) {
+        UserAccount user = userAccountRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Không khóa admin acc
+        if ("ADMIN".equalsIgnoreCase(user.getRole())) {
+            throw new RuntimeException("Cannot lock admin account");
+        }
+
+        user.setAccountStatus("LOCKED");
+        UserAccount saved = userAccountRepository.save(user);
+        return mapToDTO(saved);
+    }
+
+    public UserAccountDTO unlockUser(Long userId) {
+        UserAccount user = userAccountRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setAccountStatus("ACTIVE");
+        return mapToDTO(userAccountRepository.save(user));
+    }
 }
