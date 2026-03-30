@@ -50,6 +50,7 @@ public class ReturnRequestService {
         OrderItem orderItem = orderItemRepository.findById(dto.getOrderItemId())
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         Order order = orderItem.getOrder();
+        order.setPaymentStatus("PAID");
         // 1. Check ownership
         if (!order.getUser().getUserId().equals(currentUser.getUserId())) {
             throw new BadRequestException("You are not allowed to return this order");
