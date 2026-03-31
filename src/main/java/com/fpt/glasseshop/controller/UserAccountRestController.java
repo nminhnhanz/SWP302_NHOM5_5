@@ -73,18 +73,21 @@ public class UserAccountRestController {
             @RequestParam String email,
             @RequestParam String password) {
 
-        boolean isAuth = userAccountService.authenticate(email, password);
+        String result = userAccountService.authenticate(email, password);
 
-        if (!isAuth) {
-            return ResponseEntity.status(401)
-                    .body(ApiResponse.error("Invalid email or password"));
+        if ("LOCKED".equals(result)) {
+            return ResponseEntity.status(403)
+                    .body(ApiResponse.error("Tài khoản của bạn đã bị khóa"));
         }
 
-        // ✅ FIX: lấy user để lấy role
+        if (!"SUCCESS".equals(result)) {
+            return ResponseEntity.status(401)
+                    .body(ApiResponse.error("Sai email hoặc mật khẩu"));
+        }
+
         UserAccount user = userAccountService.getUserByEmail(email);
 
-        // ✅ FIX: generate token có role
-        String token = jwtUtil.generateToken(user.getUserId(),user.getEmail(), user.getRole());
+        String token = jwtUtil.generateToken(user.getUserId(), user.getEmail(), user.getRole());
 
         return ResponseEntity.ok(
                 ApiResponse.success("Login successful", token)
@@ -135,4 +138,21 @@ public class UserAccountRestController {
                 ApiResponse.success("User profile updated successfully", updated)
         );
     }
+
+    @PatchMapping("/{id}/lock/")
+    public ResponseEntity<ApiResponse<UserAccountDTO>> lockUser(@PathVariable Long id) {
+
+        UserAccountDTO updated = userAccountService.lockUser(id);
+
+        return ResponseEntity.ok(
+                ApiResponse.success("User account locked successfully", updated)
+        );
+    }
+    @PatchMapping("/{id}/unlock/")
+    public ResponseEntity<ApiResponse<UserAccountDTO>> unlockUser (@PathVariable Long id) {
+        UserAccountDTO updated = userAccountService.unlockUser(id);
+        return ResponseEntity.ok(
+                ApiResponse.success("User account unlocked successfully", updated));
+    }
+
 }

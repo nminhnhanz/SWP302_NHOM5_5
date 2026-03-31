@@ -6,6 +6,7 @@ import com.fpt.glasseshop.entity.ReturnRequest;
 import com.fpt.glasseshop.entity.UserAccount;
 import com.fpt.glasseshop.entity.dto.ReturnRequestDTO;
 import com.fpt.glasseshop.entity.dto.ReturnRequestResponseDTO;
+import com.fpt.glasseshop.entity.dto.UpdateReturnStatusDTO;
 import com.fpt.glasseshop.repository.OrderItemRepository;
 import com.fpt.glasseshop.repository.OrderRepository;
 import com.fpt.glasseshop.repository.ReturnRequestRepository;
@@ -50,33 +51,34 @@ public class ReturnRequestService {
         OrderItem orderItem = orderItemRepository.findById(dto.getOrderItemId())
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         Order order = orderItem.getOrder();
-        // 1. Check ownership
-        if (!order.getUser().getUserId().equals(currentUser.getUserId())) {
-            throw new BadRequestException("You are not allowed to return this order");
+        order.setPaymentStatus("PAID");
+        // 1. check owner
+        if (order.getUser() == null || !order.getUser().getUserId().equals(currentUser.getUserId())) {
+            throw new BadRequestException("You are not allowed to return this order item");
         }
 
-        // 2. Check status
-        if (!order.getStatus().equals("DELIVERED")) {
+        // 2. đơn delivered mới được đổi/trả
+        if (!"DELIVERED".equalsIgnoreCase(order.getStatus())) {
             throw new BadRequestException("Only delivered orders can be returned");
         }
 
-        // 3. Check payment
-        if (!order.getPaymentStatus().equals("PAID")) {
+        // 3. đơn đã thanh toán mới được đổi/trả
+        if (!"PAID".equalsIgnoreCase(order.getPaymentStatus())) {
             throw new BadRequestException("Only paid orders can be returned");
         }
 
-        // 4. Check duplicate
-        if (returnRequestRepo.existsByOrderItemOrderItemId(order.getOrderId())) {
-            throw new BadRequestException("Return request already exists");
+        // 4. check trùng theo orderItem
+        if (returnRequestRepo.existsByOrderItemOrderItemId(orderItem.getOrderItemId())) {
+            throw new BadRequestException("Return request already exists for this order item");
         }
 
-        // 5. Check time (7 days)
+        // 5. check time 7 day
         if (order.getDeliveredAt() != null &&
                 order.getDeliveredAt().plusDays(7).isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Return period expired");
         }
 
-        // 6. Validate reason
+        // 6. validate reason
         if (dto.getReason() == null || dto.getReason().trim().isEmpty()) {
             throw new BadRequestException("Reason is required");
         }
@@ -102,12 +104,12 @@ public class ReturnRequestService {
     }
 
     @Transactional
-    public ReturnRequestResponseDTO updateStatus(Long id, ReturnRequest.ReturnStatus newStatus) {
-
+    public ReturnRequestResponseDTO updateStatus(Long id, UpdateReturnStatusDTO dto) {
         ReturnRequest request = returnRequestRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Return request not found"));
 
         ReturnRequest.ReturnStatus currentStatus = request.getStatus();
+        ReturnRequest.ReturnStatus newStatus = dto.getStatus();
 
         if (newStatus == null) {
             throw new IllegalArgumentException("Status must not be null");
@@ -117,25 +119,33 @@ public class ReturnRequestService {
             throw new IllegalArgumentException("Return request is already in status: " + newStatus);
         }
 
-        //  Check flow
         if (!isValidTransition(currentStatus, newStatus)) {
             throw new IllegalArgumentException(
                     "Cannot change return request status from " + currentStatus + " to " + newStatus
             );
         }
 
-        //  Check role
         validateRolePermission(currentStatus, newStatus);
+        //check flow
+        if (newStatus == ReturnRequest.ReturnStatus.REJECTED) {
+            if (dto.getRejectionReason() == null || dto.getRejectionReason().trim().isEmpty()) {
+                throw new IllegalArgumentException("Rejection reason is required");
+            }
+            request.setRejectionReason(dto.getRejectionReason().trim());
+        } else {
+            request.setRejectionReason(null);
+        }
 
         request.setStatus(newStatus);
-
-        if ((newStatus == ReturnRequest.ReturnStatus.REJECTED
-                || newStatus == ReturnRequest.ReturnStatus.COMPLETED)
-                && request.getResolvedAt() == null) {
+        //check role
+        if (newStatus == ReturnRequest.ReturnStatus.APPROVED
+                || newStatus == ReturnRequest.ReturnStatus.REJECTED
+                || newStatus == ReturnRequest.ReturnStatus.COMPLETED) {
             request.setResolvedAt(LocalDateTime.now());
         }
 
-        return mapToDTO(returnRequestRepo.save(request));
+        ReturnRequest saved = returnRequestRepo.save(request);
+        return mapToDTO(saved);
     }
 
     private boolean isValidTransition(ReturnRequest.ReturnStatus currentStatus,
@@ -155,24 +165,25 @@ public class ReturnRequestService {
     private void validateRolePermission(ReturnRequest.ReturnStatus currentStatus,
                                         ReturnRequest.ReturnStatus newStatus) {
 
-        if (hasRole("ROLE_OPERATIONAL_STAFF")) {
-            if (currentStatus == ReturnRequest.ReturnStatus.PENDING
-                    && newStatus == ReturnRequest.ReturnStatus.APPROVED) {
-                return;
-            }
+        boolean isStaff = hasRole("ROLE_OPERATIONAL_STAFF");
+        boolean isAdmin = hasRole("ROLE_ADMIN");
+
+        if (!isStaff && !isAdmin) {
+            throw new AccessDeniedException("You do not have permission to update return request status");
         }
 
-        if (hasRole("ROLE_ADMIN")) {
-            boolean allowed =
-                    (currentStatus == ReturnRequest.ReturnStatus.PENDING
-                            && newStatus == ReturnRequest.ReturnStatus.REJECTED)
-                            ||
-                            (currentStatus == ReturnRequest.ReturnStatus.APPROVED
-                                    && newStatus == ReturnRequest.ReturnStatus.COMPLETED);
 
-            if (allowed) {
-                return;
-            }
+        // admin và staff
+        if (currentStatus == ReturnRequest.ReturnStatus.PENDING &&
+                (newStatus == ReturnRequest.ReturnStatus.APPROVED
+                        || newStatus == ReturnRequest.ReturnStatus.REJECTED)) {
+            return;
+        }
+
+        // cả 2 đều complete
+        if (currentStatus == ReturnRequest.ReturnStatus.APPROVED &&
+                newStatus == ReturnRequest.ReturnStatus.COMPLETED) {
+            return;
         }
 
         throw new AccessDeniedException("You do not have permission to update return request status");
@@ -190,6 +201,13 @@ public class ReturnRequestService {
                 .anyMatch(a -> role.equals(a.getAuthority()));
     }
 
+    public ReturnRequestResponseDTO getByOrderItemId(Long orderItemId) {
+        ReturnRequest request = returnRequestRepo.findByOrderItemOrderItemId(orderItemId)
+                .orElseThrow(() -> new RuntimeException("Return request not found"));
+
+        return mapToDTO(request);
+    }
+
     public ReturnRequestResponseDTO mapToDTO(ReturnRequest request) {
         return ReturnRequestResponseDTO.builder()
                 .requestId(request.getRequestId())
@@ -201,6 +219,7 @@ public class ReturnRequestService {
                 .status(request.getStatus().name())
                 .requestedAt(request.getRequestedAt())
                 .resolvedAt(request.getResolvedAt())
+                .rejectionReason(request.getRejectionReason())
                 .build();
     }
 }

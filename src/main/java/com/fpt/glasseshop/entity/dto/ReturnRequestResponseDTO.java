@@ -19,6 +19,7 @@ public class ReturnRequestResponseDTO {
     private String description;
     private String imageUrl;
     private String status;
+    private String rejectionReason;
     private LocalDateTime requestedAt;
     private LocalDateTime resolvedAt;
 }

@@ -97,7 +97,6 @@ public class SecurityConfig {
 
                         // ===== RETURN REQUEST =====
                         .requestMatchers(HttpMethod.POST, "/api/return-requests/**").authenticated()
-                        .requestMatchers(HttpMethod.PATCH, "/api/return-requests/**").hasRole("ADMIN")
 
                         .requestMatchers("/operational-staff/**").hasAnyRole("OPERATIONAL_STAFF", "ADMIN")
 

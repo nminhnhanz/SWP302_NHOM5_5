@@ -50,9 +50,12 @@ public class Order {
     private String paymentStatus;
     private String paymentMethod;
 
+    @Column(columnDefinition = "nvarchar(255)")
     private String fullName;
     private String phone;
+    @Column(columnDefinition = "nvarchar(255)")
     private String address;
+    @Column(columnDefinition = "nvarchar(255)")
     private String note;
     
     private BigDecimal shippingFee;

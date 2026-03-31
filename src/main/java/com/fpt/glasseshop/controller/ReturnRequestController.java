@@ -44,8 +44,16 @@ public class ReturnRequestController {
             @PathVariable Long id,
             @RequestBody UpdateReturnStatusDTO dto) {
 
-        ReturnRequestResponseDTO responseDto = returnRequestService.updateStatus(id, dto.getStatus());
+        ReturnRequestResponseDTO responseDto = returnRequestService.updateStatus(id, dto);
 
         return ResponseEntity.ok(ApiResponse.success("Return request status updated successfully", responseDto));
+    }
+
+    @GetMapping("/order-item/{orderItemId}")
+    public ResponseEntity<ApiResponse<ReturnRequestResponseDTO>> getByOrderItemId(
+            @PathVariable Long orderItemId) {
+
+        ReturnRequestResponseDTO dto = returnRequestService.getByOrderItemId(orderItemId);
+        return ResponseEntity.ok(ApiResponse.success("Return request fetched successfully", dto));
     }
 }

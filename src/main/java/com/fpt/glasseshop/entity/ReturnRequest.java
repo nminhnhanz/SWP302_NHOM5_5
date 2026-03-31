@@ -21,10 +21,10 @@ public class ReturnRequest {
     private Long requestId;
 
     @ManyToOne
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_item_id")
     private OrderItem orderItem;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "reason", columnDefinition = "NVARCHAR(MAX)")
     private String reason;
 
     @Enumerated(EnumType.STRING)
@@ -37,12 +37,16 @@ public class ReturnRequest {
     public enum ReturnStatus {
         PENDING, APPROVED, REJECTED, COMPLETED
     }
-    // Mô tả chi tiết
-    @Column(columnDefinition = "TEXT")
+
+    @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
     // Ảnh minh chứng
     @Column(columnDefinition = "TEXT")
     private String imageUrl;
+
+    @Column(name = "rejection_reason", columnDefinition = "NVARCHAR(MAX)")
+    private String rejectionReason;
+
 
 }
