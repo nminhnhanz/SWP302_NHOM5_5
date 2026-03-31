@@ -63,7 +63,7 @@ public class SecurityConfig {
                                 "/api/users/login",
                                 "/api/users/create",
                                 "/api/users/check-email",
-                                "/api/users/google-login"
+                                "/api/users/login-google"
                         ).permitAll()
 
 

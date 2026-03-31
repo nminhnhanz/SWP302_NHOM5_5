@@ -4,6 +4,7 @@ import com.fpt.glasseshop.entity.UserAccount;
 import com.fpt.glasseshop.entity.dto.ApiResponse;
 import com.fpt.glasseshop.entity.dto.UserAccountDTO;
 import com.fpt.glasseshop.entity.dto.request.UpdateProfileRequest;
+import com.fpt.glasseshop.service.GoogleAuthService;
 import com.fpt.glasseshop.service.UserAccountService;
 import com.fpt.glasseshop.security.JwtUtil;
 
@@ -25,6 +26,7 @@ import java.util.List;
 @Tag(name = "UserAPI", description = "Operations related to user accounts")
 public class UserAccountRestController {
 
+    private final GoogleAuthService googleAuthService;
     private final UserAccountService userAccountService;
     private final JwtUtil jwtUtil; // ✅ FIX: inject JwtUtil
 
@@ -88,6 +90,27 @@ public class UserAccountRestController {
                 ApiResponse.success("Login successful", token)
         );
     }
+
+    // ================= LOGIN GOOGLE =================
+    @PostMapping("/login-google")
+    @Operation(summary = "Login with Google and get JWT token")
+    public ResponseEntity<ApiResponse<String>> loginGoogle(
+            @RequestParam String gmail,
+            @RequestParam String name) {
+
+        UserAccount user = googleAuthService.handleGoogleLogin(gmail, name);
+
+        String token = jwtUtil.generateToken(
+                user.getUserId(),
+                user.getEmail(),
+                user.getRole()
+        );
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Login Google successful", token)
+        );
+    }
+
 
     // ================= DELETE USER =================
     @DeleteMapping("/{id}")
