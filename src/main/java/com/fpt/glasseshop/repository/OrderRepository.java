@@ -18,13 +18,39 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByIdempotencyKey(String idempotencyKey);
 
     @Query("""
-            SELECT COALESCE(SUM(o.totalPrice), 0)
+            SELECT COALESCE(SUM(o.finalPrice), 0)
             FROM Order o 
-            WHERE o.paymentStatus = 'PAID'
+            WHERE o.status IN ('DELIVERED', 'COMPLETED')
+           """ )
+    BigDecimal calculateTotalRevenue();
+
+    @Query("""
+            SELECT COUNT(o)
+            FROM Order o
+            WHERE o.status IN ('DELIVERED', 'COMPLETED')
+           """)
+    Long countDeliveredOrders();
+
+    @Query("""
+            SELECT COALESCE(SUM(o.finalPrice), 0)
+            FROM Order o 
+            WHERE o.status IN ('DELIVERED', 'COMPLETED')
             AND o.orderDate >= :from
             AND o.orderDate <= :to           
            """ )
     BigDecimal calculateRevenueBetween(
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to
+    );
+
+    @Query("""
+            SELECT COUNT(o)
+            FROM Order o
+            WHERE o.status IN ('DELIVERED', 'COMPLETED')
+            AND o.orderDate >= :from
+            AND o.orderDate <= :to
+    """)
+    Long countDeliveredOrdersBetween(
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to
     );

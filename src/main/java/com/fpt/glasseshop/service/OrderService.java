@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -68,13 +69,14 @@ public class OrderService {
     @Transactional
     public OrderDTO updateOrderStatus(Long orderId, String newStatus) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));java.util.List<String> validStatuses = java.util.Arrays.asList("PENDING", "PROCESSING", "DELIVERING", "DELIVERED", "CANCELED");
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+        java.util.List<String> validStatuses = java.util.Arrays.asList("PENDING", "PROCESSING", "DELIVERING", "DELIVERED", "CANCELED");
         if (!validStatuses.contains(newStatus)) {
             throw new IllegalArgumentException("Invalid order status: " + newStatus);
         }
 
         order.setStatus(newStatus);
-        
+
         // Check if canceled to restore stock
         if ("CANCELED".equals(newStatus)) {
             for (OrderItem item : order.getOrderItems()) {
@@ -86,9 +88,10 @@ public class OrderService {
         if ("DELIVERED".equals(newStatus) && order.getDeliveredAt() == null) {
             order.setDeliveredAt(LocalDateTime.now());
         }
-        
+
         return convertToDTO(orderRepository.save(order));
     }
+
     @Transactional
     public OrderDTO updatePaymentOrderStatus(Long orderId, String newStatus) {
         Order order = orderRepository.findById(orderId)
@@ -144,7 +147,7 @@ public class OrderService {
 
         // 3. Create Order Object
         String orderCode = "ORD-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-        
+
         Order order = Order.builder()
                 .user(user)
                 .orderCode(orderCode)
@@ -170,7 +173,7 @@ public class OrderService {
 
             // Atomic Stock Validation & Deduction (Skip for Preorders)
             boolean isPreorderItem = Boolean.TRUE.equals(cartItem.getIsPreorder()) || Boolean.TRUE.equals(request.getIsPreorder());
-            
+
             if (!isPreorderItem) {
                 int updatedRows = productVariantRepository.decreaseStock(cartItem.getVariant().getVariantId(), cartItem.getQuantity());
                 if (updatedRows == 0) {
@@ -353,7 +356,7 @@ public class OrderService {
     }
 
     public long getTotalOrdersPaid() {
-        return orderRepository.countByPaymentStatus("PAID");
+        return orderRepository.count();
     }
 
 

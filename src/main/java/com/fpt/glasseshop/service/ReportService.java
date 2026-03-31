@@ -8,4 +8,5 @@ import java.time.LocalDateTime;
 
 public interface ReportService {
     RevenueResponse getRevenueBetween(LocalDate fromDate, LocalDate toDate) throws BadRequestException;
+    RevenueResponse getOverallRevenue();
 }

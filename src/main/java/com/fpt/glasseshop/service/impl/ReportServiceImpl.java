@@ -32,14 +32,27 @@ public class ReportServiceImpl implements ReportService {
         LocalDateTime to = toDate.atTime(23,59,59);
 
         BigDecimal totalRevenue = orderRepo.calculateRevenueBetween(from, to);
-        Long totalOrders = orderRepo.countPaidOrdersBetween(from, to);
+        Long totalOrders = orderRepo.countDeliveredOrdersBetween(from, to);
 
         return RevenueResponse.builder()
                 .fromDate(fromDate)
                 .toDate(toDate)
                 .totalRevenue(totalRevenue)
                 .totalOrders(totalOrders)
+                .timestamp(LocalDateTime.now())
                 .build();
 
+    }
+
+    @Override
+    public RevenueResponse getOverallRevenue() {
+        BigDecimal totalRevenue = orderRepo.calculateTotalRevenue();
+        Long totalOrders = orderRepo.countDeliveredOrders();
+
+        return RevenueResponse.builder()
+                .totalRevenue(totalRevenue)
+                .totalOrders(totalOrders)
+                .timestamp(LocalDateTime.now())
+                .build();
     }
 }
