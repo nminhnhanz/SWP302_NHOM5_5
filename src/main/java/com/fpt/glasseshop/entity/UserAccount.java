@@ -20,7 +20,7 @@ public class UserAccount {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
-
+    @Column(columnDefinition = "NVARCHAR(255)")
     private String name;
 
     @Column(unique = true)
