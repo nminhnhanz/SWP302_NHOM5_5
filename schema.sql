@@ -193,6 +193,12 @@ CREATE TABLE return_request (
     resolved_at DATETIME2,
     FOREIGN KEY (order_id) REFERENCES orders(order_id)
 );
+ALTER TABLE return_request ADD rejection_reason NVARCHAR(MAX);
+ALTER TABLE return_request ADD description NVARCHAR(MAX);
+ALTER TABLE return_request ADD order_item_id BIGINT;
+ALTER TABLE return_request ALTER COLUMN status NVARCHAR(50);
+ALTER TABLE return_request
+    ADD FOREIGN KEY (order_item_id) REFERENCES order_item(order_item_id);
 
 -- Phase 3: Enhanced Schema - Notifications
 CREATE TABLE notification (
