@@ -21,10 +21,13 @@ public class Address {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserAccount user;
-
+    @Column(columnDefinition = "NVARCHAR(255)")
     private String street;
+    @Column(columnDefinition = "NVARCHAR(100)")
     private String city;
+    @Column(columnDefinition = "NVARCHAR(100)")
     private String state;
     private String zipCode;
+    @Column(columnDefinition = "NVARCHAR(100)")
     private String country;
 }

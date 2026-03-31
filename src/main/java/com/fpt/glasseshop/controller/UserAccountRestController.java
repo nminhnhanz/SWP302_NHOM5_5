@@ -75,12 +75,12 @@ public class UserAccountRestController {
 
         if ("LOCKED".equals(result)) {
             return ResponseEntity.status(403)
-                    .body(ApiResponse.error("Your account has been locked"));
+                    .body(ApiResponse.error("Tài khoản của bạn đã bị khóa"));
         }
 
         if (!"SUCCESS".equals(result)) {
             return ResponseEntity.status(401)
-                    .body(ApiResponse.error("Invalid email or password"));
+                    .body(ApiResponse.error("Sai email hoặc mật khẩu"));
         }
 
         UserAccount user = userAccountService.getUserByEmail(email);
