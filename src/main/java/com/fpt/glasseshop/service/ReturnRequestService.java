@@ -1,16 +1,10 @@
 package com.fpt.glasseshop.service;
 
-import com.fpt.glasseshop.entity.Order;
-import com.fpt.glasseshop.entity.OrderItem;
-import com.fpt.glasseshop.entity.ReturnRequest;
-import com.fpt.glasseshop.entity.UserAccount;
+import com.fpt.glasseshop.entity.*;
 import com.fpt.glasseshop.entity.dto.ReturnRequestDTO;
 import com.fpt.glasseshop.entity.dto.ReturnRequestResponseDTO;
 import com.fpt.glasseshop.entity.dto.UpdateReturnStatusDTO;
-import com.fpt.glasseshop.repository.OrderItemRepository;
-import com.fpt.glasseshop.repository.OrderRepository;
-import com.fpt.glasseshop.repository.ReturnRequestRepository;
-import com.fpt.glasseshop.repository.UserAccountRepository;
+import com.fpt.glasseshop.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.security.access.AccessDeniedException;
@@ -19,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,6 +25,7 @@ public class ReturnRequestService {
     private final OrderRepository orderRepository;
     private final UserAccountRepository userAccountRepository;
     private final OrderItemRepository orderItemRepository;
+    private final PrescriptionRepository prescriptionRepo;
 
     private UserAccount getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -89,6 +85,11 @@ public class ReturnRequestService {
                 .description(dto.getDescription())
                 .imageUrl(dto.getImageUrl())
                 .status(ReturnRequest.ReturnStatus.PENDING)
+                .requestType(
+                        "EXCHANGE".equalsIgnoreCase(dto.getRequestType())
+                                ? ReturnRequest.RequestType.EXCHANGE
+                                : ReturnRequest.RequestType.RETURN
+                )
                 .build();
 
         ReturnRequest saved = returnRequestRepo.save(request);
@@ -137,6 +138,12 @@ public class ReturnRequestService {
         }
 
         request.setStatus(newStatus);
+        if (newStatus == ReturnRequest.ReturnStatus.APPROVED
+                && request.getRequestType() == ReturnRequest.RequestType.EXCHANGE) {
+
+            Long newOrderId = createReplacementOrderForExchange(request);
+            request.setReplacementOrderId(newOrderId);
+        }
         //check role
         if (newStatus == ReturnRequest.ReturnStatus.APPROVED
                 || newStatus == ReturnRequest.ReturnStatus.REJECTED
@@ -208,18 +215,180 @@ public class ReturnRequestService {
         return mapToDTO(request);
     }
 
+    @Transactional
+    public ReturnRequest approveRequest(Long requestId) {
+        ReturnRequest request = returnRequestRepo.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Return request not found"));
+
+        validatePendingRequest(request);
+
+        request.setStatus(ReturnRequest.ReturnStatus.APPROVED);
+        request.setResolvedAt(LocalDateTime.now());
+
+        if (request.getRequestType() == ReturnRequest.RequestType.EXCHANGE) {
+            Long newOrderId = createReplacementOrderForExchange(request);
+            request.setReplacementOrderId(newOrderId);
+        }
+
+        return returnRequestRepo.save(request);
+    }
+
+    @Transactional
+    public ReturnRequest rejectRequest(Long requestId, String rejectionReason) {
+        ReturnRequest request = returnRequestRepo.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Return request not found"));
+
+        validatePendingRequest(request);
+
+        if (rejectionReason == null || rejectionReason.trim().isEmpty()) {
+            throw new RuntimeException("Rejection reason is required");
+        }
+
+        request.setStatus(ReturnRequest.ReturnStatus.REJECTED);
+        request.setRejectionReason(rejectionReason.trim());
+        request.setResolvedAt(LocalDateTime.now());
+
+        return returnRequestRepo.save(request);
+    }
+
+    @Transactional
+    public ReturnRequest completeRequest(Long requestId) {
+        ReturnRequest request = returnRequestRepo.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Return request not found"));
+
+        if (request.getStatus() != ReturnRequest.ReturnStatus.APPROVED) {
+            throw new RuntimeException("Only approved requests can be completed");
+        }
+
+        request.setStatus(ReturnRequest.ReturnStatus.COMPLETED);
+        request.setResolvedAt(LocalDateTime.now());
+
+        return returnRequestRepo.save(request);
+    }
+
     public ReturnRequestResponseDTO mapToDTO(ReturnRequest request) {
         return ReturnRequestResponseDTO.builder()
                 .requestId(request.getRequestId())
-                .orderId(request.getOrderItem().getOrderItemId())
-                .orderItemId(request.getOrderItem().getOrderItemId())
+                .orderId(
+                        request.getOrderItem() != null && request.getOrderItem().getOrder() != null
+                                ? request.getOrderItem().getOrder().getOrderId()
+                                : null
+                )
+                .orderItemId(request.getOrderItem() != null ? request.getOrderItem().getOrderItemId() : null)
                 .reason(request.getReason())
                 .description(request.getDescription())
                 .imageUrl(request.getImageUrl())
-                .status(request.getStatus().name())
+                .status(request.getStatus() != null ? request.getStatus().name() : null)
+                .rejectionReason(request.getRejectionReason())
+                .requestType(request.getRequestType() != null ? request.getRequestType().name() : null)
+                .replacementOrderId(request.getReplacementOrderId())
                 .requestedAt(request.getRequestedAt())
                 .resolvedAt(request.getResolvedAt())
-                .rejectionReason(request.getRejectionReason())
                 .build();
+    }
+
+    private void validatePendingRequest(ReturnRequest request) {
+        if (request.getStatus() != ReturnRequest.ReturnStatus.PENDING) {
+            throw new RuntimeException("Only pending requests can be updated");
+        }
+    }
+
+    private Long createReplacementOrderForExchange(ReturnRequest request) {
+        OrderItem oldItem = getRequiredOrderItem(request);
+        Order newOrder = createReplacementOrder(oldItem);
+        OrderItem savedNewItem = orderItemRepository.save(cloneOrderItem(oldItem, newOrder));
+        clonePrescriptionIfNeeded(oldItem, savedNewItem);
+        return newOrder.getOrderId();
+    }
+
+    private OrderItem getRequiredOrderItem(ReturnRequest request) {
+        OrderItem orderItem = request.getOrderItem();
+        if (orderItem == null) {
+            throw new RuntimeException("Order item not found");
+        }
+        if (orderItem.getOrder() == null) {
+            throw new RuntimeException("Original order not found");
+        }
+        return orderItem;
+    }
+
+    private Order createReplacementOrder(OrderItem oldItem) {
+        Order oldOrder = oldItem.getOrder();
+
+        BigDecimal totalPrice = oldItem.getUnitPrice()
+                .multiply(BigDecimal.valueOf(oldItem.getQuantity()));
+
+        return orderRepository.save(
+                Order.builder()
+                        .user(oldOrder.getUser())
+                        .status("PENDING")
+                        .paymentStatus("UNPAID")
+                        .paymentMethod("EXCHANGE")
+                        .shippingAddress(oldOrder.getShippingAddress())
+                        .billingAddress(oldOrder.getBillingAddress())
+                        .totalPrice(totalPrice)
+                        .build()
+        );
+    }
+
+    private OrderItem cloneOrderItem(OrderItem oldItem, Order newOrder) {
+        return OrderItem.builder()
+                .order(newOrder)
+                .variant(oldItem.getVariant())
+                .lensOption(oldItem.getLensOption())
+                .quantity(oldItem.getQuantity())
+                .unitPrice(oldItem.getUnitPrice())
+                .fulfillmentType(oldItem.getFulfillmentType())
+
+                .variantId(oldItem.getVariantId())
+                .productId(oldItem.getProductId())
+                .productName(oldItem.getProductName())
+                .variantColor(oldItem.getVariantColor())
+                .variantSize(oldItem.getVariantSize())
+                .imageUrl(oldItem.getImageUrl())
+
+                .lensType(oldItem.getLensType())
+                .lensPrice(oldItem.getLensPrice())
+                .lensCoating(oldItem.getLensCoating())
+                .lensOptionId(oldItem.getLensOptionId())
+
+                .sphLeft(oldItem.getSphLeft())
+                .sphRight(oldItem.getSphRight())
+                .cylLeft(oldItem.getCylLeft())
+                .cylRight(oldItem.getCylRight())
+                .axisLeft(oldItem.getAxisLeft())
+                .axisRight(oldItem.getAxisRight())
+                .addLeft(oldItem.getAddLeft())
+                .addRight(oldItem.getAddRight())
+                .pd(oldItem.getPd())
+
+                .isPreorder(oldItem.getIsPreorder())
+                .build();
+    }
+
+    private void clonePrescriptionIfNeeded(OrderItem oldItem, OrderItem newItem) {
+        Prescription oldPrescription = oldItem.getPrescription();
+        if (oldPrescription == null) return;
+
+        prescriptionRepo.save(
+                Prescription.builder()
+                        .orderItem(newItem)
+                        .user(oldPrescription.getUser())
+                        .name(oldPrescription.getName())
+                        .sphLeft(oldPrescription.getSphLeft())
+                        .sphRight(oldPrescription.getSphRight())
+                        .cylLeft(oldPrescription.getCylLeft())
+                        .cylRight(oldPrescription.getCylRight())
+                        .axisLeft(oldPrescription.getAxisLeft())
+                        .axisRight(oldPrescription.getAxisRight())
+                        .addLeft(oldPrescription.getAddLeft())
+                        .addRight(oldPrescription.getAddRight())
+                        .pd(oldPrescription.getPd())
+                        .doctorName(oldPrescription.getDoctorName())
+                        .expirationDate(oldPrescription.getExpirationDate())
+                        .status(oldPrescription.getStatus())
+                        .adminNote(oldPrescription.getAdminNote())
+                        .build()
+        );
     }
 }

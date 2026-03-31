@@ -353,7 +353,7 @@ public class OrderService {
     }
 
     public long getTotalOrdersPaid() {
-        return orderRepository.countByPaymentStatus("PAID");
+        return orderRepository.count();
     }
 
 

@@ -39,14 +39,29 @@ public class ReturnRequestController {
         return ResponseEntity.ok(ApiResponse.success("Return requests fetched successfully", list));
     }
     //ADMIN UPDATE
-    @PatchMapping("/{id}/status")
+    @PatchMapping("/{requestId}/status")
     public ResponseEntity<ApiResponse<ReturnRequestResponseDTO>> updateStatus(
-            @PathVariable Long id,
-            @RequestBody UpdateReturnStatusDTO dto) {
+            @PathVariable Long requestId,
+            @RequestBody UpdateReturnStatusDTO request
+    ) {
+        ReturnRequest updatedRequest;
 
-        ReturnRequestResponseDTO responseDto = returnRequestService.updateStatus(id, dto);
+        switch (request.getStatus()) {
+            case APPROVED:
+                updatedRequest = returnRequestService.approveRequest(requestId);
+                break;
+            case REJECTED:
+                updatedRequest = returnRequestService.rejectRequest(requestId, request.getRejectionReason());
+                break;
+            case COMPLETED:
+                updatedRequest = returnRequestService.completeRequest(requestId);
+                break;
+            default:
+                throw new RuntimeException("Invalid status");
+        }
 
-        return ResponseEntity.ok(ApiResponse.success("Return request status updated successfully", responseDto));
+        ReturnRequestResponseDTO data = returnRequestService.mapToDTO(updatedRequest);
+        return ResponseEntity.ok(ApiResponse.success("Status updated successfully", data));
     }
 
     @GetMapping("/order-item/{orderItemId}")
@@ -56,4 +71,16 @@ public class ReturnRequestController {
         ReturnRequestResponseDTO dto = returnRequestService.getByOrderItemId(orderItemId);
         return ResponseEntity.ok(ApiResponse.success("Return request fetched successfully", dto));
     }
+    @PatchMapping("/{requestId}/approve")
+    public ResponseEntity<ApiResponse<ReturnRequestResponseDTO>> approveRequest(
+            @PathVariable Long requestId
+    ) {
+        ReturnRequest approvedRequest = returnRequestService.approveRequest(requestId);
+        ReturnRequestResponseDTO data = returnRequestService.mapToDTO(approvedRequest);
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Request approved successfully", data)
+        );
+    }
+
 }
