@@ -63,7 +63,8 @@ public class SecurityConfig {
                                 "/api/users/login",
                                 "/api/users/create",
                                 "/api/users/check-email",
-                                "/api/users/google-login"
+                                "/api/users/login-google"
+
                         ).permitAll()
 
 
@@ -90,6 +91,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/orders/*").authenticated() // 🔥 FIX
                         .requestMatchers("/api/payments/**").authenticated()
                         .requestMatchers("/api/reviews/**").authenticated() // 🔥 FIX
+                        .requestMatchers("/api/user-prescriptions").authenticated() // 🔥 FIX
+                        .requestMatchers("/api/user-prescriptions/**").authenticated() // 🔥 FIX
+
 
                         // ===== RETURN REQUEST =====
                         .requestMatchers(HttpMethod.POST, "/api/return-requests/**").authenticated()
