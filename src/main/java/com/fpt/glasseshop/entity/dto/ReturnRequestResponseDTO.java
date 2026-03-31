@@ -22,4 +22,6 @@ public class ReturnRequestResponseDTO {
     private String rejectionReason;
     private LocalDateTime requestedAt;
     private LocalDateTime resolvedAt;
+    private String requestType;
+    private Long replacementOrderId;
 }

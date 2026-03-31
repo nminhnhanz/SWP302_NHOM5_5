@@ -48,5 +48,15 @@ public class ReturnRequest {
     @Column(name = "rejection_reason", columnDefinition = "NVARCHAR(MAX)")
     private String rejectionReason;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "request_type")
+    private RequestType requestType;
+
+    @Column(name = "replacement_order_id")
+    private Long replacementOrderId;
+
+    public enum RequestType {
+        RETURN, EXCHANGE
+    }
 
 }
