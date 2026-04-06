@@ -15,7 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @RestController
-@RequestMapping ("/admin/reports")
+@RequestMapping ("api/admin/reports")
 public class ReportController {
 
     @Autowired
@@ -25,6 +25,11 @@ public class ReportController {
     public ResponseEntity<ApiResponse<RevenueResponse>> getRevenueBetween(@RequestParam LocalDate fromDate, @RequestParam LocalDate toDate) throws BadRequestException {
         RevenueResponse revenue = reportService.getRevenueBetween(fromDate, toDate);
         return ResponseEntity.ok(ApiResponse.success("Revenue calculated successfully",revenue));
+    }
+    @GetMapping("/total")
+    public ResponseEntity<ApiResponse<RevenueResponse>> getTotalRevenue() {
+        RevenueResponse revenue = reportService.getOverallRevenue();
+        return ResponseEntity.ok(ApiResponse.success("Overall revenue calculated successfully", revenue));
     }
 
 }

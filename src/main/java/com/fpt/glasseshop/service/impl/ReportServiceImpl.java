@@ -42,4 +42,16 @@ public class ReportServiceImpl implements ReportService {
                 .build();
 
     }
+
+    @Override
+    public RevenueResponse getOverallRevenue() {
+        BigDecimal totalRevenue = orderRepo.calculateTotalRevenue();
+        Long totalOrders = orderRepo.countDeliveredOrders();
+
+        return RevenueResponse.builder()
+                .totalRevenue(totalRevenue)
+                .totalOrders(totalOrders)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
 }

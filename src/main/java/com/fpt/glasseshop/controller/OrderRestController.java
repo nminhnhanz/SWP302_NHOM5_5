@@ -149,7 +149,7 @@ public class OrderRestController {
     public ResponseEntity<ApiResponse<Long>> getTotalCustomers() {
         return ResponseEntity.ok(ApiResponse.success(
                 "Get total customers successfully",
-                orderService.getTotalCustomersPaid()
+                orderService.getTotalCustomers()
         ));
     }
 
@@ -157,7 +157,7 @@ public class OrderRestController {
     public ResponseEntity<ApiResponse<Long>> getTotalOrders() {
         return ResponseEntity.ok(ApiResponse.success(
                 "Get total orders successfully",
-                orderService.getTotalOrdersPaid()
+                orderService.getTotalOrders()
         ));
     }
 

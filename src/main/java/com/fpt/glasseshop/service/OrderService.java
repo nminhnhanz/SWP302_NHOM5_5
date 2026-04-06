@@ -348,11 +348,11 @@ public class OrderService {
                 .build();
     }
 
-    public long getTotalCustomersPaid() {
-        return orderRepository.countCustomersPaid();
+    public long getTotalCustomers() {
+        return orderRepository.countCustomers();
     }
 
-    public long getTotalOrdersPaid() {
+    public long getTotalOrders() {
         return orderRepository.count();
     }
 

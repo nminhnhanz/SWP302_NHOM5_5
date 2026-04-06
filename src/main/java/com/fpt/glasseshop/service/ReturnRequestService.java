@@ -26,6 +26,7 @@ public class ReturnRequestService {
     private final UserAccountRepository userAccountRepository;
     private final OrderItemRepository orderItemRepository;
     private final PrescriptionRepository prescriptionRepo;
+    private final ProductVariantRepository productVariantRepository;
 
     private UserAccount getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -47,7 +48,11 @@ public class ReturnRequestService {
         OrderItem orderItem = orderItemRepository.findById(dto.getOrderItemId())
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         Order order = orderItem.getOrder();
-        order.setPaymentStatus("PAID");
+
+        if(order.getStatus().equals("DELIVERED")){
+            order.setPaymentStatus("PAID");
+        }
+
         // 1. check owner
         if (order.getUser() == null || !order.getUser().getUserId().equals(currentUser.getUserId())) {
             throw new BadRequestException("You are not allowed to return this order item");
@@ -295,6 +300,11 @@ public class ReturnRequestService {
 
     private Long createReplacementOrderForExchange(ReturnRequest request) {
         OrderItem oldItem = getRequiredOrderItem(request);
+        //check stock
+        ProductVariant proVariant = oldItem.getVariant();
+        if(proVariant.getStockQuantity()<=0){
+            throw new RuntimeException("Product is out of stock");
+        }
         Order newOrder = createReplacementOrder(oldItem);
         OrderItem savedNewItem = orderItemRepository.save(cloneOrderItem(oldItem, newOrder));
         clonePrescriptionIfNeeded(oldItem, savedNewItem);
@@ -322,7 +332,7 @@ public class ReturnRequestService {
                 Order.builder()
                         .user(oldOrder.getUser())
                         .status("PENDING")
-                        .paymentStatus("UNPAID")
+                        .paymentStatus("PAID")
                         .paymentMethod("EXCHANGE")
                         .shippingAddress(oldOrder.getShippingAddress())
                         .billingAddress(oldOrder.getBillingAddress())

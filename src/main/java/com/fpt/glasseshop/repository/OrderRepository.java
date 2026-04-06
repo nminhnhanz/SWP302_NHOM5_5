@@ -44,9 +44,22 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("""
     SELECT COUNT(DISTINCT o.user.userId)
         FROM Order o
-        WHERE o.paymentStatus = 'PAID'
     """)
-    long countCustomersPaid();
+    long countCustomers();
 
     long countByPaymentStatus(String paymentStatus);
+
+    @Query("""
+            SELECT COALESCE(SUM(o.finalPrice), 0)
+            FROM Order o 
+            WHERE o.status IN ('DELIVERED', 'COMPLETED')
+           """ )
+    BigDecimal calculateTotalRevenue();
+
+    @Query("""
+            SELECT COUNT(o)
+            FROM Order o
+            WHERE o.status IN ('DELIVERED', 'COMPLETED')
+           """)
+    Long countDeliveredOrders();
 }
